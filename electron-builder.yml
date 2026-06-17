@@ -1,0 +1,62 @@
+appId: com.zenthoz.pos
+productName: "POS System"
+copyright: "Copyright 2024 Zenthoz Technologies"
+
+directories:
+  output: dist-installer
+  buildResources: build
+
+# Main electron entry
+main: electron/main.js
+
+files:
+  - "electron/**/*"
+  - "!node_modules/**/*"
+  - "!src/**/*"
+  - "!prisma/**/*"
+  - "!.next/**/*"
+  - "!dist-installer/**/*"
+
+# Bundle the Next.js standalone build + static assets into resources
+extraResources:
+  - from: ".next/standalone"
+    to: "app/.next/standalone"
+    filter: ["**/*"]
+  - from: ".next/static"
+    to: "app/.next/standalone/.next/static"
+    filter: ["**/*"]
+  - from: "public"
+    to: "app/public"
+    filter: ["**/*"]
+  - from: "prisma/schema.prisma"
+    to: "app/prisma/schema.prisma"
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: "build/icon.ico"
+  requestedExecutionLevel: asInvoker
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: "POS System"
+  installerHeaderIcon: "build/icon.ico"
+  include: "build/installer.nsh"
+
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+  icon: "build/icon.icns"
+  category: public.app-category.business
+
+linux:
+  target: AppImage
+  icon: "build/icon.png"
+  category: Office
+
+publish: null

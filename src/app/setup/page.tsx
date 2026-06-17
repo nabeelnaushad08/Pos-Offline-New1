@@ -12,14 +12,13 @@ export default function SetupPage() {
   const [status, setStatus] = useState<SetupStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
+  const [machineId, setMachineId] = useState("");
 
-  // License activation state
   const [licenseKey, setLicenseKey] = useState("");
   const [activating, setActivating] = useState(false);
   const [activateError, setActivateError] = useState("");
   const [activateSuccess, setActivateSuccess] = useState(false);
 
-  // Admin creation state
   const [adminName, setAdminName] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
@@ -27,16 +26,16 @@ export default function SetupPage() {
   const [adminError, setAdminError] = useState("");
   const [adminSuccess, setAdminSuccess] = useState(false);
 
-  // DB test state
-  const [testingDb, setTestingDb] = useState(false);
-  const [dbConnected, setDbConnected] = useState<boolean | null>(null);
+  const [initializingDb, setInitializingDb] = useState(false);
+  const [dbInitialized, setDbInitialized] = useState<boolean | null>(null);
+  const [dbError, setDbError] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const fetchStatus = async () => {
     try {
       const res = await fetch("/api/setup/status");
       const data = await res.json();
       setStatus(data);
-      // Determine which step to show
       if (!data.dbOk) {
         setCurrentStep(1);
       } else if (!data.licensed) {
@@ -44,7 +43,6 @@ export default function SetupPage() {
       } else if (!data.hasAdmin) {
         setCurrentStep(3);
       } else {
-        // All done — set cookie and redirect
         document.cookie = "pos-licensed=true; path=/; max-age=31536000";
         window.location.href = "/login";
       }
@@ -56,25 +54,41 @@ export default function SetupPage() {
     }
   };
 
+  const fetchMachineId = async () => {
+    try {
+      const res = await fetch("/api/setup/machine-id");
+      const data = await res.json();
+      setMachineId(data.machineId || "UNKNOWN");
+    } catch {
+      setMachineId("UNKNOWN");
+    }
+  };
+
   useEffect(() => {
     fetchStatus();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchMachineId();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const testDbConnection = async () => {
-    setTestingDb(true);
-    setDbConnected(null);
+  const initializeDatabase = async () => {
+    setInitializingDb(true);
+    setDbInitialized(null);
+    setDbError("");
     try {
       const res = await fetch("/api/setup/db-status");
       const data = await res.json();
-      setDbConnected(data.connected);
       if (data.connected) {
+        setDbInitialized(true);
         await fetchStatus();
+      } else {
+        setDbInitialized(false);
+        setDbError(data.error || "Failed to initialize local database.");
       }
     } catch {
-      setDbConnected(false);
+      setDbInitialized(false);
+      setDbError("Could not reach the database initialization service.");
     } finally {
-      setTestingDb(false);
+      setInitializingDb(false);
     }
   };
 
@@ -96,7 +110,6 @@ export default function SetupPage() {
         setActivateError(data.error || "Invalid license key");
       } else {
         setActivateSuccess(true);
-        // Set cookie from client side as well
         document.cookie = "pos-licensed=true; path=/; max-age=31536000";
         await fetchStatus();
       }
@@ -129,7 +142,6 @@ export default function SetupPage() {
         setAdminError(data.error || "Failed to create admin account");
       } else {
         setAdminSuccess(true);
-        // Redirect to login after a moment
         setTimeout(() => {
           document.cookie = "pos-licensed=true; path=/; max-age=31536000";
           window.location.href = "/login";
@@ -139,6 +151,16 @@ export default function SetupPage() {
       setAdminError("Failed to create admin account. Please try again.");
     } finally {
       setCreatingAdmin(false);
+    }
+  };
+
+  const copyMachineId = async () => {
+    try {
+      await navigator.clipboard.writeText(machineId);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // fallback: select text
     }
   };
 
@@ -163,18 +185,18 @@ export default function SetupPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
-        {/* Header / Branding */}
+        {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4 shadow-lg shadow-blue-500/30">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-white">POS System Activation</h1>
+          <h1 className="text-2xl font-bold text-white">POS System Setup</h1>
           <p className="text-blue-300/70 text-sm mt-1">Powered by Zenthoz Technologies</p>
         </div>
 
-        {/* Steps indicator */}
+        {/* Step indicator */}
         <div className="flex items-center justify-center gap-2 mb-8">
           {[1, 2, 3].map((step) => (
             <div key={step} className="flex items-center gap-2">
@@ -198,7 +220,7 @@ export default function SetupPage() {
           ))}
         </div>
 
-        {/* Step 1: Database Check */}
+        {/* Step 1: Initialize Local Database */}
         {currentStep === 1 && (
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-4">
@@ -208,74 +230,64 @@ export default function SetupPage() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-white">Step 1: Database Connection</h2>
-                <p className="text-sm text-white/50">Verify your database is accessible</p>
+                <h2 className="text-lg font-semibold text-white">Step 1: Initialize Local Database</h2>
+                <p className="text-sm text-white/50">Creates the local database on this device</p>
               </div>
             </div>
 
-            <div className={`flex items-center gap-3 p-4 rounded-xl mb-4 ${
-              dbConnected === true
+            <div className={`flex items-start gap-3 p-4 rounded-xl mb-4 ${
+              dbInitialized === true
                 ? "bg-green-500/20 border border-green-500/30"
-                : dbConnected === false
+                : dbInitialized === false
                 ? "bg-red-500/20 border border-red-500/30"
                 : "bg-white/5 border border-white/10"
             }`}>
-              {dbConnected === true ? (
-                <svg className="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {dbInitialized === true ? (
+                <svg className="w-5 h-5 text-green-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-              ) : dbConnected === false ? (
-                <svg className="w-5 h-5 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              ) : dbInitialized === false ? (
+                <svg className="w-5 h-5 text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               ) : (
-                <svg className="w-5 h-5 text-white/30 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg className="w-5 h-5 text-blue-300 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               )}
               <div>
                 <p className="text-sm font-medium text-white">
-                  {dbConnected === true
-                    ? "Database connected successfully"
-                    : dbConnected === false
-                    ? "Cannot connect to database"
-                    : "Database connection not tested yet"}
+                  {dbInitialized === true
+                    ? "Local database initialized successfully!"
+                    : dbInitialized === false
+                    ? "Failed to initialize database"
+                    : "Ready to set up your local database"}
                 </p>
-                {dbConnected === false && (
-                  <p className="text-xs text-red-300 mt-1">
-                    Make sure DATABASE_URL is set correctly in your environment variables and the MySQL server is running.
+                {dbInitialized === null && (
+                  <p className="text-xs text-white/40 mt-1">
+                    All your data will be stored locally on this device. No internet or external server required.
                   </p>
+                )}
+                {dbInitialized === false && dbError && (
+                  <p className="text-xs text-red-300 mt-1 font-mono">{dbError}</p>
                 )}
               </div>
             </div>
 
             <button
-              onClick={testDbConnection}
-              disabled={testingDb}
+              onClick={initializeDatabase}
+              disabled={initializingDb}
               className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
             >
-              {testingDb ? (
+              {initializingDb ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Testing Connection...
+                  Initializing... (this may take 30 seconds)
                 </>
               ) : (
-                "Test Database Connection"
+                "Initialize Local Database"
               )}
             </button>
-
-            {dbConnected === false && (
-              <div className="mt-4 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
-                <p className="text-xs font-semibold text-amber-400 mb-2">Setup Instructions:</p>
-                <ol className="text-xs text-amber-300/80 space-y-1 list-decimal list-inside">
-                  <li>Set <code className="bg-amber-500/20 px-1 rounded">DATABASE_URL</code> in your <code className="bg-amber-500/20 px-1 rounded">.env</code> file</li>
-                  <li>Format: <code className="bg-amber-500/20 px-1 rounded">mysql://user:password@host:3306/dbname</code></li>
-                  <li>Ensure MySQL server is running and accessible</li>
-                  <li>Run <code className="bg-amber-500/20 px-1 rounded">npx prisma db push</code> to create tables</li>
-                  <li>Restart the server and try again</li>
-                </ol>
-              </div>
-            )}
           </div>
         )}
 
@@ -290,12 +302,35 @@ export default function SetupPage() {
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-white">Step 2: License Activation</h2>
-                <p className="text-sm text-white/50">Enter your license key to activate</p>
+                <p className="text-sm text-white/50">Activate your license for this device</p>
               </div>
             </div>
 
+            {/* Device ID box */}
+            <div className="mb-5 p-4 bg-slate-800/60 border border-blue-500/30 rounded-xl">
+              <p className="text-xs font-semibold text-blue-400 mb-2 uppercase tracking-wide">Your Device ID</p>
+              <div className="flex items-center gap-2">
+                <code className="text-base text-white font-mono tracking-widest flex-1 select-all">
+                  {machineId}
+                </code>
+                <button
+                  onClick={copyMachineId}
+                  className={`shrink-0 text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
+                    copied
+                      ? "bg-green-600/40 text-green-300"
+                      : "bg-blue-600/30 hover:bg-blue-600/50 text-blue-300"
+                  }`}
+                >
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+              </div>
+              <p className="text-xs text-white/40 mt-2">
+                Share this Device ID with Zenthoz Technologies to get your license key.
+              </p>
+            </div>
+
             {activateSuccess ? (
-              <div className="flex items-center gap-3 p-4 bg-green-500/20 border border-green-500/30 rounded-xl mb-4">
+              <div className="flex items-center gap-3 p-4 bg-green-500/20 border border-green-500/30 rounded-xl">
                 <svg className="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -308,15 +343,11 @@ export default function SetupPage() {
                   <input
                     type="text"
                     value={licenseKey}
-                    onChange={(e) => {
-                      setLicenseKey(e.target.value.toUpperCase());
-                      setActivateError("");
-                    }}
+                    onChange={(e) => { setLicenseKey(e.target.value.toUpperCase()); setActivateError(""); }}
                     placeholder="ZPOS-XXXX-XXXX-XXXX-XXXX"
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/30 font-mono text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20"
                     onKeyDown={(e) => e.key === "Enter" && handleActivate()}
                   />
-                  <p className="text-xs text-white/40 mt-1.5">Format: ZPOS-XXXX-XXXX-XXXX-XXXX</p>
                 </div>
 
                 {activateError && (
@@ -339,10 +370,6 @@ export default function SetupPage() {
                     "Activate License"
                   )}
                 </button>
-
-                <p className="text-xs text-white/40 text-center mt-3">
-                  Contact Zenthoz Technologies to obtain a license key for your domain.
-                </p>
               </>
             )}
           </div>
@@ -359,7 +386,7 @@ export default function SetupPage() {
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-white">Step 3: Create Admin Account</h2>
-                <p className="text-sm text-white/50">Set up the first administrator account</p>
+                <p className="text-sm text-white/50">Set up the administrator account for this device</p>
               </div>
             </div>
 
@@ -379,7 +406,7 @@ export default function SetupPage() {
                       type="text"
                       value={adminName}
                       onChange={(e) => { setAdminName(e.target.value); setAdminError(""); }}
-                      placeholder="John Doe"
+                      placeholder="Store Owner Name"
                       className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/30 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20"
                     />
                   </div>
@@ -399,7 +426,7 @@ export default function SetupPage() {
                       type="password"
                       value={adminPassword}
                       onChange={(e) => { setAdminPassword(e.target.value); setAdminError(""); }}
-                      placeholder="Min. 8 characters"
+                      placeholder="Minimum 8 characters"
                       className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/30 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20"
                     />
                   </div>
@@ -422,7 +449,7 @@ export default function SetupPage() {
                       Creating Account...
                     </>
                   ) : (
-                    "Create Admin Account"
+                    "Create Admin Account & Launch POS"
                   )}
                 </button>
               </>

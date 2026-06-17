@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -88,26 +88,26 @@ model Customer {
 }
 
 model Product {
-  id              String            @id @default(cuid())
-  name            String
-  sku             String            @unique
-  barcode         String?           @unique
-  description     String?
-  categoryId      String?
-  costPrice       Decimal           @db.Decimal(10, 2)
-  sellingPrice    Decimal           @db.Decimal(10, 2)
-  stock           Int               @default(0)
-  minimumStock    Int               @default(5)
-  unit            String            @default("pcs")
-  image           String?
-  isActive        Boolean           @default(true)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id               String            @id @default(cuid())
+  name             String
+  sku              String            @unique
+  barcode          String?           @unique
+  description      String?
+  categoryId       String?
+  costPrice        Float
+  sellingPrice     Float
+  stock            Int               @default(0)
+  minimumStock     Int               @default(5)
+  unit             String            @default("pcs")
+  image            String?
+  isActive         Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
-  category        Category?         @relation(fields: [categoryId], references: [id])
-  saleItems       SaleItem[]
+  category         Category?         @relation(fields: [categoryId], references: [id])
+  saleItems        SaleItem[]
   supplierProducts SupplierProduct[]
-  purchaseItems   PurchaseItem[]
+  purchaseItems    PurchaseItem[]
 
   @@index([sku])
   @@index([barcode])
@@ -150,21 +150,21 @@ model SupplierProduct {
 }
 
 model Purchase {
-  id             String         @id @default(cuid())
-  purchaseNumber String         @unique
+  id             String          @id @default(cuid())
+  purchaseNumber String          @unique
   supplierId     String
   userId         String
-  subtotal       Decimal        @db.Decimal(10, 2)
-  discount       Decimal        @default(0) @db.Decimal(10, 2)
-  total          Decimal        @db.Decimal(10, 2)
-  amountPaid     Decimal        @default(0) @db.Decimal(10, 2)
-  status         PurchaseStatus @default(RECEIVED)
+  subtotal       Float
+  discount       Float           @default(0)
+  total          Float
+  amountPaid     Float           @default(0)
+  status         PurchaseStatus  @default(RECEIVED)
   notes          String?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
-  supplier       Supplier       @relation(fields: [supplierId], references: [id])
-  user           User           @relation(fields: [userId], references: [id])
+  supplier       Supplier        @relation(fields: [supplierId], references: [id])
+  user           User            @relation(fields: [userId], references: [id])
   items          PurchaseItem[]
   payments       SupplierPayment[]
 
@@ -180,8 +180,8 @@ model PurchaseItem {
   productName  String
   sku          String
   quantity     Int
-  unitCost     Decimal  @db.Decimal(10, 2)
-  subtotal     Decimal  @db.Decimal(10, 2)
+  unitCost     Float
+  subtotal     Float
   createdAt    DateTime @default(now())
 
   purchase     Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
@@ -193,16 +193,16 @@ model PurchaseItem {
 }
 
 model SupplierPayment {
-  id         String      @id @default(cuid())
+  id         String        @id @default(cuid())
   supplierId String
   purchaseId String?
-  amount     Decimal     @db.Decimal(10, 2)
+  amount     Float
   method     PaymentMethod @default(CASH)
   notes      String?
-  createdAt  DateTime    @default(now())
+  createdAt  DateTime      @default(now())
 
-  supplier   Supplier    @relation(fields: [supplierId], references: [id])
-  purchase   Purchase?   @relation(fields: [purchaseId], references: [id])
+  supplier   Supplier      @relation(fields: [supplierId], references: [id])
+  purchase   Purchase?     @relation(fields: [purchaseId], references: [id])
 
   @@index([supplierId])
   @@map("supplier_payments")
@@ -213,14 +213,14 @@ model Sale {
   receiptNumber String        @unique
   userId        String
   customerId    String?
-  subtotal      Decimal       @db.Decimal(10, 2)
-  discount      Decimal       @default(0) @db.Decimal(10, 2)
-  tax           Decimal       @default(0) @db.Decimal(10, 2)
-  total         Decimal       @db.Decimal(10, 2)
+  subtotal      Float
+  discount      Float         @default(0)
+  tax           Float         @default(0)
+  total         Float
   paymentMethod PaymentMethod @default(CASH)
-  cashAmount    Decimal?      @db.Decimal(10, 2)
-  cardAmount    Decimal?      @db.Decimal(10, 2)
-  change        Decimal?      @db.Decimal(10, 2)
+  cashAmount    Float?
+  cardAmount    Float?
+  change        Float?
   status        SaleStatus    @default(COMPLETED)
   notes         String?
   customerName  String?
@@ -240,19 +240,19 @@ model Sale {
 }
 
 model SaleItem {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   saleId      String
   productId   String
   productName String
   sku         String
   quantity    Int
-  costPrice   Decimal   @db.Decimal(10, 2)
-  unitPrice   Decimal   @db.Decimal(10, 2)
-  subtotal    Decimal   @db.Decimal(10, 2)
-  createdAt   DateTime  @default(now())
+  costPrice   Float
+  unitPrice   Float
+  subtotal    Float
+  createdAt   DateTime @default(now())
 
-  sale        Sale      @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  product     Product   @relation(fields: [productId], references: [id])
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
 
   @@index([saleId])
   @@index([productId])
@@ -263,11 +263,11 @@ model Notification {
   id           String           @id @default(cuid())
   type         NotificationType
   title        String
-  message      String           @db.Text
+  message      String
   isRead       Boolean          @default(false)
   sentEmail    Boolean          @default(false)
   sentWhatsApp Boolean          @default(false)
-  metadata     String?          @db.Text
+  metadata     String?
   createdAt    DateTime         @default(now())
 
   @@index([type])
@@ -281,7 +281,7 @@ model ActivityLog {
   action    String
   entity    String
   entityId  String?
-  details   String?  @db.Text
+  details   String?
   ipAddress String?
   createdAt DateTime @default(now())
 
@@ -298,7 +298,7 @@ model PrinterSettings {
   printerName String?
   paperSize   String   @default("80mm")
   headerTitle String?
-  logo        String?  @db.LongText
+  logo        String?
   showLogo    Boolean  @default(false)
   footer      String?
   showFooter  Boolean  @default(true)
@@ -310,23 +310,23 @@ model PrinterSettings {
 }
 
 model SystemSettings {
-  id             String   @id @default(cuid())
-  systemName     String   @default("POS System")
-  logo           String?  @db.LongText
-  currency       String   @default("LKR")
-  currencySymbol String   @default("Rs.")
-  timezone       String   @default("Asia/Colombo")
-  taxRate        Decimal  @default(0) @db.Decimal(5, 2)
-  theme          String   @default("light")
-  address        String?
-  phone          String?
-  email          String?
-  kotEnabled     Boolean  @default(false)
-  printerIp      String?
-  printerEnabled Boolean  @default(false)
-  slogan         String?
-  whatsApp       String?
-  receiptNote    String?
+  id                  String    @id @default(cuid())
+  systemName          String    @default("POS System")
+  logo                String?
+  currency            String    @default("LKR")
+  currencySymbol      String    @default("Rs.")
+  timezone            String    @default("Asia/Colombo")
+  taxRate             Float     @default(0)
+  theme               String    @default("light")
+  address             String?
+  phone               String?
+  email               String?
+  kotEnabled          Boolean   @default(false)
+  printerIp           String?
+  printerEnabled      Boolean   @default(false)
+  slogan              String?
+  whatsApp            String?
+  receiptNote         String?
   thankYouLine1       String    @default("THANK YOU FOR YOUR VISIT")
   thankYouLine2       String    @default("COME AGAIN!")
   printAgentUrl       String    @default("http://localhost:3001")
@@ -340,29 +340,29 @@ model SystemSettings {
 }
 
 model Employee {
-  id              String    @id @default(cuid())
-  employeeId      String    @unique  // auto-generated: EMP-0001
-  fullName        String
-  nicNumber       String?   @unique
-  dateOfBirth     DateTime?
-  gender          String?   // MALE, FEMALE, OTHER
-  contactNumber   String?
-  email           String?
-  address         String?
+  id               String    @id @default(cuid())
+  employeeId       String    @unique
+  fullName         String
+  nicNumber        String?   @unique
+  dateOfBirth      DateTime?
+  gender           String?
+  contactNumber    String?
+  email            String?
+  address          String?
   emergencyContact String?
-  dateJoined      DateTime  @default(now())
-  position        String    @default("Cashier")
-  department      String?
-  basicSalary     Decimal   @default(0) @db.Decimal(10, 2)
-  employmentType  String    @default("FULL_TIME") // FULL_TIME, PART_TIME, CONTRACT, TEMPORARY
-  photo           String?   @db.LongText
-  isActive        Boolean   @default(true)
-  notes           String?   @db.Text
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  dateJoined       DateTime  @default(now())
+  position         String    @default("Cashier")
+  department       String?
+  basicSalary      Float     @default(0)
+  employmentType   String    @default("FULL_TIME")
+  photo            String?
+  isActive         Boolean   @default(true)
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  attendance      Attendance[]
-  payroll         Payroll[]
+  attendance       Attendance[]
+  payroll          Payroll[]
   performanceNotes PerformanceNote[]
 
   @@index([isActive])
@@ -370,16 +370,16 @@ model Employee {
 }
 
 model Attendance {
-  id          String    @id @default(cuid())
-  employeeId  String
-  date        DateTime  @db.Date
-  checkIn     DateTime?
-  checkOut    DateTime?
-  status      String    @default("PRESENT") // PRESENT, ABSENT, LATE, HALF_DAY
-  notes       String?
-  createdAt   DateTime  @default(now())
+  id         String    @id @default(cuid())
+  employeeId String
+  date       DateTime
+  checkIn    DateTime?
+  checkOut   DateTime?
+  status     String    @default("PRESENT")
+  notes      String?
+  createdAt  DateTime  @default(now())
 
-  employee    Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employee   Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@unique([employeeId, date])
   @@index([employeeId])
@@ -388,27 +388,27 @@ model Attendance {
 }
 
 model Payroll {
-  id              String    @id @default(cuid())
-  employeeId      String
-  month           Int       // 1-12
-  year            Int
-  basicSalary     Decimal   @db.Decimal(10, 2)
-  workingDays     Int       @default(0)
-  presentDays     Int       @default(0)
-  overtimeHours   Decimal   @default(0) @db.Decimal(6, 2)
-  overtimeRate    Decimal   @default(0) @db.Decimal(10, 2)
-  allowances      Decimal   @default(0) @db.Decimal(10, 2)
-  deductions      Decimal   @default(0) @db.Decimal(10, 2)
-  bonus           Decimal   @default(0) @db.Decimal(10, 2)
-  advance         Decimal   @default(0) @db.Decimal(10, 2)
-  netSalary       Decimal   @db.Decimal(10, 2)
-  status          String    @default("PENDING") // PENDING, PAID
-  paidAt          DateTime?
-  notes           String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  employeeId    String
+  month         Int
+  year          Int
+  basicSalary   Float
+  workingDays   Int       @default(0)
+  presentDays   Int       @default(0)
+  overtimeHours Float     @default(0)
+  overtimeRate  Float     @default(0)
+  allowances    Float     @default(0)
+  deductions    Float     @default(0)
+  bonus         Float     @default(0)
+  advance       Float     @default(0)
+  netSalary     Float
+  status        String    @default("PENDING")
+  paidAt        DateTime?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  employee        Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@unique([employeeId, month, year])
   @@index([employeeId])
@@ -417,15 +417,15 @@ model Payroll {
 }
 
 model PerformanceNote {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   employeeId  String
-  type        String    @default("NOTE") // NOTE, WARNING, COMMENDATION
+  type        String   @default("NOTE")
   title       String
-  description String    @db.Text
-  date        DateTime  @default(now())
-  createdAt   DateTime  @default(now())
+  description String
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
 
-  employee    Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@index([employeeId])
   @@map("performance_notes")
@@ -438,22 +438,25 @@ model ExpenseCategory {
   isDefault Boolean   @default(false)
   createdAt DateTime  @default(now())
   expenses  Expense[]
+
   @@map("expense_categories")
 }
 
 model Expense {
   id            String           @id @default(cuid())
   title         String
-  amount        Decimal          @db.Decimal(10, 2)
+  amount        Float
   categoryId    String?
   date          DateTime         @default(now())
   paymentMethod String           @default("CASH")
   reference     String?
   notes         String?
-  receipt       String?          @db.LongText
+  receipt       String?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
+
   category      ExpenseCategory? @relation(fields: [categoryId], references: [id])
+
   @@index([date])
   @@index([categoryId])
   @@map("expenses")
@@ -463,11 +466,12 @@ model Investment {
   id          String   @id @default(cuid())
   title       String
   type        String   @default("INITIAL")
-  amount      Decimal  @db.Decimal(10, 2)
+  amount      Float
   date        DateTime @default(now())
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
   @@index([date])
   @@map("investments")
 }
@@ -476,13 +480,14 @@ model Asset {
   id           String   @id @default(cuid())
   name         String
   type         String   @default("EQUIPMENT")
-  purchaseCost Decimal  @db.Decimal(10, 2)
-  currentValue Decimal  @db.Decimal(10, 2)
+  purchaseCost Float
+  currentValue Float
   purchaseDate DateTime
   notes        String?
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
   @@index([isActive])
   @@map("assets")
 }
@@ -492,11 +497,12 @@ model CustomerCredit {
   customerId   String?
   customerName String?
   type         String   @default("CREDIT")
-  amount       Decimal  @db.Decimal(10, 2)
+  amount       Float
   saleId       String?
   notes        String?
   date         DateTime @default(now())
   createdAt    DateTime @default(now())
+
   @@index([customerId])
   @@index([date])
   @@map("customer_credits")

@@ -2,7 +2,7 @@
   "name": "pos",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "electron/main.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -10,7 +10,11 @@
     "lint": "next lint",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "electron:dev": "electron .",
+    "electron:build": "electron-builder --config electron-builder.yml",
+    "build:offline": "bash scripts/build-offline.sh",
+    "generate-license": "node scripts/generate-license.js"
   },
   "repository": {
     "type": "git",
@@ -70,6 +74,8 @@
     "prisma": "^5.22.0",
     "tailwindcss": "^3.4.15",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
   }
 }
