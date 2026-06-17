@@ -92,26 +92,25 @@ export default function SetupPage() {
       setAdminError("Passwords do not match");
       return;
     }
-    if (adminForm.password.length < 6) {
-      setAdminError("Password must be at least 6 characters");
+    if (adminForm.password.length < 8) {
+      setAdminError("Password must be at least 8 characters");
       return;
     }
     setStepStatus((s) => ({ ...s, admin: "loading" }));
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch("/api/setup/create-admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: adminForm.name,
           email: adminForm.email,
           password: adminForm.password,
-          role: "ADMIN",
         }),
       });
       const data = await res.json();
       if (res.ok) {
         setStepStatus((s) => ({ ...s, admin: "done" }));
-        setTimeout(() => router.push("/auth/signin"), 1500);
+        setTimeout(() => router.push("/login"), 1500);
       } else {
         setStepStatus((s) => ({ ...s, admin: "error" }));
         setAdminError(data.error || "Failed to create admin account");
@@ -280,7 +279,7 @@ export default function SetupPage() {
                   <label className="text-xs text-slate-400 mb-1 block">Password</label>
                   <input
                     type="password"
-                    placeholder="Min. 6 characters"
+                    placeholder="Min. 8 characters"
                     value={adminForm.password}
                     onChange={(e) => setAdminForm((f) => ({ ...f, password: e.target.value }))}
                     className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
