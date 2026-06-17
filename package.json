@@ -11,9 +11,10 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate",
-    "electron:dev": "electron .",
+    "electron:dev": "electron electron/main.js",
+    "electron:start": "electron .",
     "electron:build": "electron-builder --config electron-builder.yml",
-    "build:offline": "bash scripts/build-offline.sh",
+    "build:offline": "NEXT_BUILD_STANDALONE=1 next build && electron-builder --config electron-builder.yml",
     "generate-license": "node scripts/generate-license.js"
   },
   "repository": {

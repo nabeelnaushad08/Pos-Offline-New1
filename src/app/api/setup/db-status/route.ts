@@ -3,24 +3,23 @@ import { execSync } from "child_process";
 
 export async function GET() {
   try {
-    // Push the SQLite schema (creates the .db file and all tables if not exist)
+    // Run prisma db push to create/update the SQLite schema
     try {
-      execSync("npx prisma db push --skip-generate --accept-data-loss", {
+      execSync("npx prisma db push --skip-generate", {
         env: { ...process.env, PRISMA_HIDE_UPDATE_MESSAGE: "1" },
         timeout: 60000,
-        stdio: "pipe",
+        stdio: 'pipe',
       });
     } catch (pushErr) {
-      console.warn("[db-status] db push warning:", String(pushErr).slice(0, 200));
+      console.warn("prisma db push warning:", pushErr);
     }
 
-    // Test connection
+    // Now test the connection
     const { prisma } = await import("@/lib/prisma");
     await prisma.$queryRaw`SELECT 1`;
 
     return NextResponse.json({ connected: true });
   } catch (error) {
-    console.error("[setup/db-status] error:", error);
-    return NextResponse.json({ connected: false, error: String(error).slice(0, 300) });
+    return NextResponse.json({ connected: false, error: String(error) });
   }
 }

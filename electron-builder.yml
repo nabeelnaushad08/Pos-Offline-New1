@@ -3,21 +3,13 @@ productName: "POS System"
 copyright: "Copyright 2024 Zenthoz Technologies"
 
 directories:
-  output: dist-installer
+  output: dist
   buildResources: build
-
-# Main electron entry
-main: electron/main.js
 
 files:
   - "electron/**/*"
   - "!node_modules/**/*"
-  - "!src/**/*"
-  - "!prisma/**/*"
-  - "!.next/**/*"
-  - "!dist-installer/**/*"
 
-# Bundle the Next.js standalone build + static assets into resources
 extraResources:
   - from: ".next/standalone"
     to: "app/.next/standalone"
@@ -28,8 +20,6 @@ extraResources:
   - from: "public"
     to: "app/public"
     filter: ["**/*"]
-  - from: "prisma/schema.prisma"
-    to: "app/prisma/schema.prisma"
 
 win:
   target:
@@ -44,13 +34,12 @@ nsis:
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: "POS System"
+  installerIcon: "build/icon.ico"
+  uninstallerIcon: "build/icon.ico"
   installerHeaderIcon: "build/icon.ico"
-  include: "build/installer.nsh"
 
 mac:
-  target:
-    - target: dmg
-      arch: [x64, arm64]
+  target: dmg
   icon: "build/icon.icns"
   category: public.app-category.business
 

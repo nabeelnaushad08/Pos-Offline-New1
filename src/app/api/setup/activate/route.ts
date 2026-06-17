@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateLicenseKey, getMachineId } from "@/lib/license";
+import { validateLicenseKey, getMachineIdFromEnv } from "@/lib/license";
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,12 +11,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "License key is required" }, { status: 400 });
     }
 
-    const machineId = getMachineId();
+    const machineId = getMachineIdFromEnv();
     const isValid = validateLicenseKey(key, machineId);
 
     if (!isValid) {
       return NextResponse.json(
-        { error: "Invalid license key for this device. Please contact Zenthoz Technologies with your Device ID." },
+        { error: "Invalid license key for this device. Please contact Zenthoz Technologies." },
         { status: 400 }
       );
     }

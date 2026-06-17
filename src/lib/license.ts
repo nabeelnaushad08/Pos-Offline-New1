@@ -4,8 +4,7 @@ const LICENSE_SECRET = "ZENTHOZ-POS-2024-0779067747-SECRET-KEY";
 
 export function generateLicenseKey(machineId: string): string {
   const normalized = machineId.trim().toUpperCase();
-  const hash = crypto
-    .createHmac("sha256", LICENSE_SECRET)
+  const hash = crypto.createHmac("sha256", LICENSE_SECRET)
     .update(normalized)
     .digest("hex");
   const h = hash.toUpperCase();
@@ -17,6 +16,6 @@ export function validateLicenseKey(key: string, machineId: string): boolean {
   return key.trim().toUpperCase() === expected;
 }
 
-export function getMachineId(): string {
+export function getMachineIdFromEnv(): string {
   return process.env.MACHINE_ID || "localhost";
 }
