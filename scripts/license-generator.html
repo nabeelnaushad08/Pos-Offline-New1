@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Zenthoz POS — License Key Generator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 40px;
+    width: 100%;
+    max-width: 480px;
+  }
+  .logo { text-align: center; font-size: 48px; margin-bottom: 12px; }
+  h1 { text-align: center; font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .sub { text-align: center; color: #64748b; font-size: 13px; margin-bottom: 32px; }
+  label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px; }
+  input {
+    width: 100%;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #e2e8f0;
+    font-family: monospace;
+    font-size: 15px;
+    letter-spacing: 1px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: #6366f1; }
+  input::placeholder { color: #475569; letter-spacing: 0; }
+  button {
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px;
+    background: #6366f1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button:hover { background: #4f46e5; }
+  .result-box {
+    margin-top: 24px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 16px;
+    display: none;
+  }
+  .result-box.show { display: block; }
+  .result-label { font-size: 11px; color: #64748b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .key-display {
+    font-family: monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: #a5b4fc;
+    letter-spacing: 2px;
+    word-break: break-all;
+  }
+  .copy-btn {
+    margin-top: 12px;
+    padding: 8px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    color: #94a3b8;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { background: #334155; color: #e2e8f0; }
+  .copy-btn.copied { background: #166534; border-color: #16a34a; color: #86efac; }
+  .divider { border: none; border-top: 1px solid #1e293b; margin: 24px 0; }
+  .footer { text-align: center; color: #334155; font-size: 12px; margin-top: 24px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🔑</div>
+  <h1>License Key Generator</h1>
+  <p class="sub">Zenthoz Technologies — Internal Tool</p>
+
+  <div>
+    <label>Client Device ID</label>
+    <input
+      id="machineId"
+      type="text"
+      placeholder="XXXX-XXXX-XXXX-XXXX"
+      oninput="this.value = this.value.toUpperCase()"
+      onkeydown="if(event.key==='Enter') generate()"
+    />
+  </div>
+
+  <button onclick="generate()">Generate License Key</button>
+
+  <div class="result-box" id="resultBox">
+    <div class="result-label">License Key for this device</div>
+    <div class="key-display" id="keyDisplay"></div>
+    <button class="copy-btn" id="copyBtn" onclick="copyKey()">Copy to Clipboard</button>
+  </div>
+
+  <hr class="divider">
+
+  <div style="font-size:12px; color:#475569; line-height:1.7;">
+    <strong style="color:#64748b;">How to use:</strong><br>
+    1. Client installs the app and opens setup<br>
+    2. They see their Device ID on the license screen<br>
+    3. They send you that ID<br>
+    4. Paste it above → Generate → send them the key
+  </div>
+</div>
+
+<p class="footer">Keep this file private — do not share with clients</p>
+
+<script>
+const LICENSE_SECRET = "ZENTHOZ-POS-2024-0779067747-SECRET-KEY";
+
+async function hmacSha256(secret, message) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw", enc.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false, ["sign"]
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(message));
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2,'0')).join('').toUpperCase();
+}
+
+async function generate() {
+  const raw = document.getElementById('machineId').value.trim();
+  if (!raw) {
+    document.getElementById('machineId').focus();
+    return;
+  }
+  const normalized = raw.toUpperCase();
+  const hash = await hmacSha256(LICENSE_SECRET, normalized);
+  const key = `ZPOS-${hash.slice(0,4)}-${hash.slice(4,8)}-${hash.slice(8,12)}-${hash.slice(12,16)}`;
+  document.getElementById('keyDisplay').textContent = key;
+  document.getElementById('resultBox').classList.add('show');
+  document.getElementById('copyBtn').textContent = 'Copy to Clipboard';
+  document.getElementById('copyBtn').className = 'copy-btn';
+}
+
+async function copyKey() {
+  const key = document.getElementById('keyDisplay').textContent;
+  await navigator.clipboard.writeText(key);
+  const btn = document.getElementById('copyBtn');
+  btn.textContent = '✓ Copied!';
+  btn.className = 'copy-btn copied';
+  setTimeout(() => {
+    btn.textContent = 'Copy to Clipboard';
+    btn.className = 'copy-btn';
+  }, 2000);
+}
+</script>
+</body>
+</html>
