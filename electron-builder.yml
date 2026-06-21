@@ -17,18 +17,11 @@ extraResources:
   - from: ".next/static"
     to: "app/.next/standalone/.next/static"
     filter: ["**/*"]
-  - from: "public"
-    to: "app/.next/standalone/public"
-    filter: ["**/*"]
-  - from: "prisma"
-    to: "app/prisma"
-    filter: ["schema.prisma"]
 
 win:
   target:
     - target: nsis
       arch: [x64]
-  icon: "build/icon.ico"
   requestedExecutionLevel: requireAdministrator
 
 nsis:
@@ -37,8 +30,5 @@ nsis:
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: "POS System"
-  installerIcon: "build/icon.ico"
-  uninstallerIcon: "build/icon.ico"
-  installerHeaderIcon: "build/icon.ico"
 
 publish: null

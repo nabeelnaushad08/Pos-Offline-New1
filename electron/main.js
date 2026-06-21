@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, dialog, ipcMain, utilityProcess } = require('electron');
+const { app, BrowserWindow, shell, dialog, ipcMain } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
@@ -6,167 +6,193 @@ const crypto = require('crypto');
 const os = require('os');
 const http = require('http');
 
-// Paths
+const PORT = 3000;
 const userDataPath = app.getPath('userData');
-const dbDir = path.join(userDataPath, 'pos-data');
-const dbPath = path.join(dbDir, 'pos.db');
-const envPath = path.join(dbDir, '.env');
-const machineIdPath = path.join(dbDir, 'machine.id');
+const dataDir = path.join(userDataPath, 'pos-data');
+const dbPath = path.join(dataDir, 'pos.db');
+const envPath = path.join(dataDir, '.env');
+const machineIdPath = path.join(dataDir, 'machine.id');
 
 let mainWindow = null;
-let nextProcess = null; // utilityProcess (packaged)
-let nextServer = null;  // child_process (dev)
-const PORT = 3000;
+let serverProcess = null;
+
+// ─── Data directory ───────────────────────────────────────────────────────────
 
 function ensureDataDir() {
-  if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
-  }
+  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 }
+
+// ─── Machine ID ───────────────────────────────────────────────────────────────
 
 function getMachineId() {
   ensureDataDir();
-  if (fs.existsSync(machineIdPath)) {
-    return fs.readFileSync(machineIdPath, 'utf8').trim();
-  }
-  const hwInfo = `${os.hostname()}-${os.platform()}-${os.arch()}-${os.cpus()[0]?.model || 'cpu'}`;
-  const baseId = crypto.createHash('sha256').update(hwInfo).digest('hex').slice(0, 16).toUpperCase();
-  const machineId = `${baseId.slice(0,4)}-${baseId.slice(4,8)}-${baseId.slice(8,12)}-${baseId.slice(12,16)}`;
-  fs.writeFileSync(machineIdPath, machineId, 'utf8');
-  return machineId;
+  if (fs.existsSync(machineIdPath)) return fs.readFileSync(machineIdPath, 'utf8').trim();
+  const hw = `${os.hostname()}-${os.platform()}-${os.arch()}-${(os.cpus()[0] || {}).model || 'cpu'}`;
+  const h = crypto.createHash('sha256').update(hw).digest('hex').slice(0, 16).toUpperCase();
+  const id = `${h.slice(0,4)}-${h.slice(4,8)}-${h.slice(8,12)}-${h.slice(12,16)}`;
+  fs.writeFileSync(machineIdPath, id, 'utf8');
+  return id;
 }
+
+// ─── .env file ────────────────────────────────────────────────────────────────
 
 function writeEnvFile() {
   ensureDataDir();
-  const machineId = getMachineId();
-
-  let existingSecret = '';
+  // Preserve existing NEXTAUTH_SECRET so sessions survive restarts
+  let secret = '';
   if (fs.existsSync(envPath)) {
-    const existing = fs.readFileSync(envPath, 'utf8');
-    const match = existing.match(/NEXTAUTH_SECRET=(.+)/);
-    if (match) existingSecret = match[1].trim();
+    const m = fs.readFileSync(envPath, 'utf8').match(/NEXTAUTH_SECRET=(.+)/);
+    if (m) secret = m[1].trim();
   }
+  if (!secret) secret = crypto.randomBytes(32).toString('hex');
 
-  const secret = existingSecret || crypto.randomBytes(32).toString('hex');
-  const dbUrl = `file:${dbPath.replace(/\\/g, '/')}`;
-
-  const envContent = [
-    `DATABASE_URL=${dbUrl}`,
+  const content = [
+    `DATABASE_URL=file:${dbPath.replace(/\\/g, '/')}`,
     `NEXTAUTH_URL=http://localhost:${PORT}`,
     `NEXTAUTH_SECRET=${secret}`,
-    `MACHINE_ID=${machineId}`,
+    `MACHINE_ID=${getMachineId()}`,
     `ELECTRON_MODE=true`,
     `NODE_ENV=production`,
   ].join('\n');
 
-  fs.writeFileSync(envPath, envContent, 'utf8');
+  fs.writeFileSync(envPath, content, 'utf8');
 }
 
 function loadEnvFile() {
   if (!fs.existsSync(envPath)) return;
-  const content = fs.readFileSync(envPath, 'utf8');
-  for (const line of content.split('\n')) {
-    const eqIdx = line.indexOf('=');
-    if (eqIdx > 0) {
-      const key = line.slice(0, eqIdx).trim();
-      const val = line.slice(eqIdx + 1).trim();
-      if (key) process.env[key] = val;
-    }
+  for (const line of fs.readFileSync(envPath, 'utf8').split('\n')) {
+    const i = line.indexOf('=');
+    if (i > 0) process.env[line.slice(0, i).trim()] = line.slice(i + 1).trim();
   }
 }
 
-function waitForServer(port, maxAttempts = 90) {
-  return new Promise((resolve, reject) => {
-    let attempts = 0;
-    const check = () => {
-      attempts++;
-      const req = http.get(`http://127.0.0.1:${port}/api/health`, (res) => {
-        if (res.statusCode < 500) {
-          resolve();
-        } else {
-          scheduleRetry();
-        }
-      });
-      req.on('error', scheduleRetry);
-      req.setTimeout(2000, () => { req.destroy(); scheduleRetry(); });
-    };
-    const scheduleRetry = () => {
-      if (attempts >= maxAttempts) {
-        reject(new Error(`Server did not start after ${maxAttempts} seconds`));
-      } else {
-        setTimeout(check, 1000);
-      }
-    };
-    check();
-  });
-}
+// ─── Start Next.js server ─────────────────────────────────────────────────────
 
-function startNextServer() {
+function startServer() {
   return new Promise((resolve, reject) => {
+    const standaloneDir = app.isPackaged
+      ? path.join(process.resourcesPath, 'app', '.next', 'standalone')
+      : path.join(__dirname, '..');
+
+    const serverScript = app.isPackaged
+      ? path.join(standaloneDir, 'server.js')
+      : null; // dev uses npm start
+
     const env = {
       ...process.env,
       PORT: String(PORT),
       HOSTNAME: '127.0.0.1',
     };
 
+    let cmd, args;
+
     if (app.isPackaged) {
-      // Packaged: use utilityProcess.fork() — runs server.js with Electron's built-in Node
-      const standaloneDir = path.join(process.resourcesPath, 'app', '.next', 'standalone');
-      const serverJs = path.join(standaloneDir, 'server.js');
-
-      console.log('[main] Starting packaged server from:', serverJs);
-
-      nextProcess = utilityProcess.fork(serverJs, [], {
-        cwd: standaloneDir,
-        env,
-        stdio: 'pipe',
-      });
-
-      nextProcess.stdout?.on('data', (d) => console.log('[next]', d.toString().trim()));
-      nextProcess.stderr?.on('data', (d) => console.error('[next-err]', d.toString().trim()));
-      nextProcess.on('exit', (code) => console.log('[next] process exited with code', code));
-      nextProcess.on('spawn', () => {
-        console.log('[main] Next.js process spawned');
-        resolve();
-      });
+      // Use Electron binary in Node mode — official Electron documented technique
+      cmd = process.execPath;
+      args = [serverScript];
+      env.ELECTRON_RUN_AS_NODE = '1';
     } else {
-      // Dev: use npm run start
-      const isWin = process.platform === 'win32';
-      const cwd = path.join(__dirname, '..');
-
-      console.log('[main] Starting dev server from:', cwd);
-
-      nextServer = spawn(isWin ? 'npm.cmd' : 'npm', ['run', 'start'], {
-        cwd,
-        env,
-        stdio: ['ignore', 'pipe', 'pipe'],
-        windowsHide: true,
-        shell: false,
-      });
-
-      nextServer.stdout?.on('data', (d) => console.log('[next]', d.toString().trim()));
-      nextServer.stderr?.on('data', (d) => console.error('[next-err]', d.toString().trim()));
-      nextServer.on('error', reject);
-      resolve();
+      cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+      args = ['run', 'start'];
     }
+
+    console.log('[main] spawning server:', cmd, args.join(' '));
+    console.log('[main] cwd:', standaloneDir);
+
+    serverProcess = spawn(cmd, args, {
+      cwd: standaloneDir,
+      env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+    });
+
+    serverProcess.stdout.on('data', (d) => process.stdout.write('[next] ' + d));
+    serverProcess.stderr.on('data', (d) => process.stderr.write('[next-err] ' + d));
+
+    serverProcess.on('error', (err) => {
+      console.error('[main] spawn error:', err);
+      reject(err);
+    });
+
+    serverProcess.on('exit', (code, signal) => {
+      console.log(`[main] server exited code=${code} signal=${signal}`);
+    });
+
+    // Give it a moment to start before we begin polling
+    setTimeout(resolve, 500);
   });
 }
 
-function createWindow() {
+// ─── Wait for HTTP server to be ready ─────────────────────────────────────────
+
+function waitForServer(maxSec = 120) {
+  return new Promise((resolve, reject) => {
+    let elapsed = 0;
+    const interval = setInterval(() => {
+      const req = http.get(`http://127.0.0.1:${PORT}/api/health`, (res) => {
+        if (res.statusCode < 500) {
+          clearInterval(interval);
+          resolve();
+        }
+      });
+      req.on('error', () => {}); // still starting up, ignore
+      req.setTimeout(1500, () => req.destroy());
+
+      elapsed++;
+      if (elapsed >= maxSec) {
+        clearInterval(interval);
+        reject(new Error(`Server did not respond after ${maxSec} seconds.\n\nCheck that no other program is using port ${PORT}.`));
+      }
+    }, 1000);
+  });
+}
+
+// ─── Windows ──────────────────────────────────────────────────────────────────
+
+function createSplash() {
+  const w = new BrowserWindow({
+    width: 420, height: 300,
+    frame: false, transparent: true,
+    alwaysOnTop: true, resizable: false,
+    webPreferences: { nodeIntegration: false },
+  });
+  w.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(`
+    <!DOCTYPE html><html><head><style>
+      *{margin:0;padding:0;box-sizing:border-box}
+      body{background:#0f172a;color:#fff;font-family:system-ui;
+        display:flex;flex-direction:column;align-items:center;
+        justify-content:center;height:100vh;-webkit-app-region:drag}
+      .icon{font-size:56px;margin-bottom:16px}
+      h1{font-size:22px;font-weight:700;margin-bottom:4px}
+      p{color:#94a3b8;font-size:13px;margin-bottom:32px}
+      .spin{width:36px;height:36px;border:3px solid #1e3a5f;
+        border-top-color:#3b82f6;border-radius:50%;
+        animation:s .8s linear infinite}
+      .msg{margin-top:14px;color:#475569;font-size:12px}
+      @keyframes s{to{transform:rotate(360deg)}}
+    </style></head><body>
+      <div class="icon">🏪</div>
+      <h1>POS System</h1>
+      <p>Powered by Zenthoz Technologies</p>
+      <div class="spin"></div>
+      <div class="msg">Starting, please wait…</div>
+    </body></html>
+  `));
+  return w;
+}
+
+function createMainWindow() {
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 800,
-    minWidth: 1024,
-    minHeight: 600,
-    title: 'POS System - Zenthoz Technologies',
-    icon: path.join(__dirname, 'icon.png'),
+    width: 1280, height: 800,
+    minWidth: 1024, minHeight: 600,
+    title: 'POS System',
+    show: false,
+    backgroundColor: '#0f172a',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
-    show: false,
-    backgroundColor: '#0f172a',
   });
 
   mainWindow.once('ready-to-show', () => {
@@ -184,46 +210,18 @@ function createWindow() {
   mainWindow.on('closed', () => { mainWindow = null; });
 }
 
-function createSplash() {
-  const splash = new BrowserWindow({
-    width: 420,
-    height: 320,
-    frame: false,
-    transparent: true,
-    alwaysOnTop: true,
-    resizable: false,
-    webPreferences: { nodeIntegration: false },
-    icon: path.join(__dirname, 'icon.png'),
-  });
-
-  const html = `<!DOCTYPE html><html><head><style>
-    body { margin:0; background:#0f172a; display:flex; align-items:center; justify-content:center;
-      height:100vh; font-family:system-ui; color:white; flex-direction:column; -webkit-app-region:drag; }
-    .logo { font-size:52px; margin-bottom:14px; }
-    h1 { margin:0 0 6px; font-size:22px; font-weight:700; }
-    p { margin:0 0 28px; color:#94a3b8; font-size:13px; }
-    .spinner { width:32px; height:32px; border:3px solid #1e3a5f; border-top-color:#3b82f6;
-      border-radius:50%; animation:spin 0.8s linear infinite; }
-    .status { margin-top:14px; color:#64748b; font-size:12px; }
-    @keyframes spin { to { transform:rotate(360deg); } }
-  </style></head><body>
-    <div class="logo">🏪</div>
-    <h1>POS System</h1>
-    <p>Powered by Zenthoz Technologies</p>
-    <div class="spinner"></div>
-    <div class="status">Starting, please wait...</div>
-  </body></html>`;
-
-  splash.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
-  return splash;
-}
+// ─── IPC ──────────────────────────────────────────────────────────────────────
 
 ipcMain.handle('get-machine-id', () => getMachineId());
 ipcMain.handle('app-version', () => app.getVersion());
 
+// ─── Lifecycle ────────────────────────────────────────────────────────────────
+
 function killServer() {
-  if (nextProcess) { try { nextProcess.kill(); } catch(e){} nextProcess = null; }
-  if (nextServer)  { try { nextServer.kill();  } catch(e){} nextServer  = null; }
+  if (serverProcess) {
+    try { serverProcess.kill('SIGTERM'); } catch (_) {}
+    serverProcess = null;
+  }
 }
 
 app.whenReady().then(async () => {
@@ -234,18 +232,15 @@ app.whenReady().then(async () => {
   const splash = createSplash();
 
   try {
-    await startNextServer();
-    await waitForServer(PORT);
+    await startServer();
+    await waitForServer();
     splash.destroy();
-    createWindow();
+    createMainWindow();
   } catch (err) {
-    console.error('[main] Startup failed:', err);
+    console.error('[main] fatal:', err);
     killServer();
     splash.destroy();
-    dialog.showErrorBox(
-      'Startup Error',
-      `Failed to start POS System.\n\n${err.message}\n\nPlease restart the application.`
-    );
+    dialog.showErrorBox('POS System — Startup Error', String(err.message));
     app.quit();
   }
 });
@@ -255,8 +250,8 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
-});
-
 app.on('before-quit', killServer);
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+});
