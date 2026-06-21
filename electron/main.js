@@ -106,21 +106,31 @@ function waitForServer(port, maxAttempts = 60) {
 // Start Next.js server
 function startNextServer() {
   return new Promise((resolve, reject) => {
-    const cwd = app.isPackaged
-      ? path.join(process.resourcesPath, 'app')
-      : path.join(__dirname, '..');
-
     const isWin = process.platform === 'win32';
-    const cmd = isWin ? 'npm.cmd' : 'npm';
-
     const env = { ...process.env, PORT: String(PORT), HOSTNAME: '127.0.0.1' };
 
-    nextServer = spawn(cmd, ['run', 'start'], {
+    let cmd, args, cwd;
+
+    if (app.isPackaged) {
+      // In packaged app: run the standalone server.js directly with node
+      const standaloneDir = path.join(process.resourcesPath, 'app', '.next', 'standalone');
+      const serverJs = path.join(standaloneDir, 'server.js');
+      cmd = process.execPath; // node binary bundled with electron
+      args = [serverJs];
+      cwd = standaloneDir;
+    } else {
+      // In dev: use npm run start from project root
+      cmd = isWin ? 'npm.cmd' : 'npm';
+      args = ['run', 'start'];
+      cwd = path.join(__dirname, '..');
+    }
+
+    nextServer = spawn(cmd, args, {
       cwd,
       env,
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
-      shell: isWin,
+      shell: false,
     });
 
     nextServer.stdout?.on('data', (d) => console.log('[next]', d.toString().trim()));

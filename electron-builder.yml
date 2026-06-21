@@ -18,15 +18,18 @@ extraResources:
     to: "app/.next/standalone/.next/static"
     filter: ["**/*"]
   - from: "public"
-    to: "app/public"
+    to: "app/.next/standalone/public"
     filter: ["**/*"]
+  - from: "prisma"
+    to: "app/prisma"
+    filter: ["schema.prisma"]
 
 win:
   target:
     - target: nsis
       arch: [x64]
   icon: "build/icon.ico"
-  requestedExecutionLevel: asInvoker
+  requestedExecutionLevel: requireAdministrator
 
 nsis:
   oneClick: false
@@ -37,15 +40,5 @@ nsis:
   installerIcon: "build/icon.ico"
   uninstallerIcon: "build/icon.ico"
   installerHeaderIcon: "build/icon.ico"
-
-mac:
-  target: dmg
-  icon: "build/icon.icns"
-  category: public.app-category.business
-
-linux:
-  target: AppImage
-  icon: "build/icon.png"
-  category: Office
 
 publish: null
