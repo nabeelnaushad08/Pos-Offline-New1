@@ -12,9 +12,21 @@ const dataDir = path.join(userDataPath, 'pos-data');
 const dbPath = path.join(dataDir, 'pos.db');
 const envPath = path.join(dataDir, '.env');
 const machineIdPath = path.join(dataDir, 'machine.id');
+const logPath = path.join(dataDir, 'startup.log');
 
 let mainWindow = null;
 let serverProcess = null;
+
+// ─── Logger ───────────────────────────────────────────────────────────────────
+
+function log(msg) {
+  const line = `[${new Date().toISOString()}] ${msg}\n`;
+  process.stdout.write(line);
+  try {
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+    fs.appendFileSync(logPath, line);
+  } catch (_) {}
+}
 
 // ─── Data directory ───────────────────────────────────────────────────────────
 
@@ -96,8 +108,9 @@ function startServer() {
       args = ['run', 'start'];
     }
 
-    console.log('[main] spawning server:', cmd, args.join(' '));
-    console.log('[main] cwd:', standaloneDir);
+    log(`spawning: ${cmd} ${args.join(' ')}`);
+    log(`cwd: ${standaloneDir}`);
+    log(`server.js exists: ${app.isPackaged ? fs.existsSync(args[0]) : 'dev-mode'}`);
 
     serverProcess = spawn(cmd, args, {
       cwd: standaloneDir,
@@ -106,19 +119,18 @@ function startServer() {
       windowsHide: true,
     });
 
-    serverProcess.stdout.on('data', (d) => process.stdout.write('[next] ' + d));
-    serverProcess.stderr.on('data', (d) => process.stderr.write('[next-err] ' + d));
+    serverProcess.stdout.on('data', (d) => log('[stdout] ' + d.toString().trim()));
+    serverProcess.stderr.on('data', (d) => log('[stderr] ' + d.toString().trim()));
 
     serverProcess.on('error', (err) => {
-      console.error('[main] spawn error:', err);
+      log(`spawn error: ${err.message}`);
       reject(err);
     });
 
     serverProcess.on('exit', (code, signal) => {
-      console.log(`[main] server exited code=${code} signal=${signal}`);
+      log(`server exited code=${code} signal=${signal}`);
     });
 
-    // Give it a moment to start before we begin polling
     setTimeout(resolve, 500);
   });
 }
@@ -139,9 +151,10 @@ function waitForServer(maxSec = 120) {
       req.setTimeout(1500, () => req.destroy());
 
       elapsed++;
+      log(`health check attempt ${elapsed}/${maxSec}`);
       if (elapsed >= maxSec) {
         clearInterval(interval);
-        reject(new Error(`Server did not respond after ${maxSec} seconds.\n\nCheck that no other program is using port ${PORT}.`));
+        reject(new Error(`Server did not respond after ${maxSec} seconds.\nLog file: ${logPath}\nCheck that no other program is using port ${PORT}.`));
       }
     }, 1000);
   });
@@ -226,21 +239,35 @@ function killServer() {
 
 app.whenReady().then(async () => {
   ensureDataDir();
+  // Clear old log on each start
+  try { fs.writeFileSync(logPath, ''); } catch (_) {}
+  log('=== POS System Starting ===');
+  log(`isPackaged: ${app.isPackaged}`);
+  log(`resourcesPath: ${process.resourcesPath || 'N/A'}`);
+  log(`userData: ${userDataPath}`);
+
   writeEnvFile();
   loadEnvFile();
+  log('env loaded');
 
   const splash = createSplash();
 
   try {
+    log('starting server...');
     await startServer();
+    log('server spawned, waiting for HTTP...');
     await waitForServer();
+    log('server ready! opening window.');
     splash.destroy();
     createMainWindow();
   } catch (err) {
-    console.error('[main] fatal:', err);
+    log(`FATAL: ${err.message}`);
     killServer();
     splash.destroy();
-    dialog.showErrorBox('POS System — Startup Error', String(err.message));
+    dialog.showErrorBox(
+      'POS System — Startup Error',
+      `${err.message}\n\nLog file for support:\n${logPath}`
+    );
     app.quit();
   }
 });
