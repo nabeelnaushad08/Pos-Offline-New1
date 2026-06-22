@@ -62,6 +62,7 @@ function writeEnvFile() {
     `DATABASE_URL=file:${dbPath.replace(/\\/g, '/')}`,
     `NEXTAUTH_URL=http://localhost:${PORT}`,
     `NEXTAUTH_SECRET=${secret}`,
+    `AUTH_TRUST_HOST=1`,
     `MACHINE_ID=${getMachineId()}`,
     `ELECTRON_MODE=true`,
     `NODE_ENV=production`,
@@ -258,8 +259,8 @@ app.whenReady().then(async () => {
     log('server spawned, waiting for HTTP...');
     await waitForServer();
     log('server ready! opening window.');
-    splash.destroy();
-    createMainWindow();
+    createMainWindow();  // create window FIRST — prevents window-all-closed race
+    splash.destroy();    // destroy splash AFTER window exists
   } catch (err) {
     log(`FATAL: ${err.message}`);
     killServer();
