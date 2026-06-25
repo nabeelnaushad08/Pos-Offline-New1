@@ -31,10 +31,23 @@ export default function SetupPage() {
   const [adminError, setAdminError] = useState("");
   const [dbError, setDbError] = useState("");
 
-  // Step 1: Auto-init DB on mount
+  // Step 1: Auto-init DB on mount, but first check if setup already done
   useEffect(() => {
-    initDb();
+    checkAndInit();
   }, []);
+
+  async function checkAndInit() {
+    try {
+      const res = await fetch("/api/setup/status");
+      const data = await res.json();
+      if (data.dbOk && data.licensed && data.hasAdmin) {
+        // Already fully set up — skip to login
+        router.replace("/login");
+        return;
+      }
+    } catch {}
+    initDb();
+  }
 
   async function initDb() {
     setStepStatus((s) => ({ ...s, db: "loading" }));
