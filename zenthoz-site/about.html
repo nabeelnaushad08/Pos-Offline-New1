@@ -39,8 +39,8 @@
     <a href="contact.html"><span>Contact</span></a>
   </nav>
   <div class="menu__meta">
-    <span>Sri Lanka · +94 76 996 6266</span>
-    <span>services@zenthoz.lk</span>
+    <span>Global · +1 (307) 301-2270</span>
+    <span>info@zenthoz.com</span>
   </div>
 </div>
 
@@ -48,6 +48,7 @@
 
   <!-- HERO -->
   <section class="hero hero--sub">
+    <canvas class="ink" aria-hidden="true"></canvas>
     <div class="hero__top">
       <p class="eyebrow">About the agency</p>
       <p class="hero__intro"><strong>The agency behind the brands you admire.</strong> Strategies that work while others flop — across multiple countries and countless success stories.</p>
@@ -72,15 +73,63 @@
   </section>
 
   <!-- VISION -->
-  <section class="statement rule">
-    <h2 class="reveal">Our <span class="serif grad">vision</span></h2>
-    <p class="reveal">Building the future of digital marketing — where <strong>every brand we touch becomes a market leader</strong>, every strategy delivers measurable impact, and every partnership creates lasting success.</p>
+  <section class="statement statement--art rule">
+    <div>
+      <h2 class="reveal">Our <span class="serif grad">vision</span></h2>
+      <p class="reveal">Building the future of digital marketing — where <strong>every brand we touch becomes a market leader</strong>, every strategy delivers measurable impact, and every partnership creates lasting success.</p>
+    </div>
+    <div class="art reveal" aria-hidden="true">
+      <svg viewBox="0 0 440 300" fill="none">
+        <defs>
+          <linearGradient id="ve1" x1="0" y1="0" x2="440" y2="0" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#8b30f0"/><stop offset=".5" stop-color="#e0338c"/><stop offset="1" stop-color="#2aa5d8"/>
+          </linearGradient>
+          <radialGradient id="ve2" cx=".5" cy=".5" r=".5">
+            <stop stop-color="#e0338c"/><stop offset="1" stop-color="#8b30f0"/>
+          </radialGradient>
+        </defs>
+        <path d="M20 150 C110 40 330 40 420 150 C330 260 110 260 20 150 Z" stroke="url(#ve1)" stroke-width="5" stroke-linejoin="round"/>
+        <circle cx="220" cy="150" r="62" stroke="url(#ve1)" stroke-width="5"/>
+        <circle cx="220" cy="150" r="30" fill="url(#ve2)"/>
+        <circle cx="234" cy="136" r="9" fill="#fbfaf8"/>
+        <g stroke="url(#ve1)" stroke-width="4" stroke-linecap="round">
+          <path d="M220 34 V10"/><path d="M120 62 L104 42"/><path d="M320 62 L336 42"/>
+        </g>
+      </svg>
+    </div>
   </section>
 
   <!-- MISSION -->
-  <section class="statement rule">
-    <h2 class="reveal">Our <span class="serif grad">mission</span></h2>
-    <p class="reveal">To deliver digital marketing excellence that drives real business growth. We architect custom strategies combining <strong>cutting-edge technology, data-driven insights and creative brilliance</strong> to help brands dominate their markets, exceed their goals and achieve sustainable success in the digital age.</p>
+  <section class="statement statement--art rule">
+    <div>
+      <h2 class="reveal">Our <span class="serif grad">mission</span></h2>
+      <p class="reveal">To deliver digital marketing excellence that drives real business growth. We architect custom strategies combining <strong>cutting-edge technology, data-driven insights and creative brilliance</strong> to help brands dominate their markets, exceed their goals and achieve sustainable success in the digital age.</p>
+    </div>
+    <div class="art reveal" aria-hidden="true">
+      <svg viewBox="0 0 440 300" fill="none">
+        <defs>
+          <linearGradient id="mi1" x1="0" y1="0" x2="440" y2="0" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#8b30f0"/><stop offset=".5" stop-color="#e0338c"/><stop offset="1" stop-color="#2aa5d8"/>
+          </linearGradient>
+          <linearGradient id="mi2" x1="0" y1="0" x2="0" y2="1">
+            <stop stop-color="#e0338c"/><stop offset="1" stop-color="#8b30f0"/>
+          </linearGradient>
+        </defs>
+        <g transform="rotate(45 220 150)">
+          <path d="M220 30 C258 74 266 140 258 196 H182 C174 140 182 74 220 30 Z" stroke="url(#mi1)" stroke-width="5" stroke-linejoin="round"/>
+          <circle cx="220" cy="118" r="22" stroke="url(#mi1)" stroke-width="5"/>
+          <path d="M182 168 C160 178 150 200 148 224 C170 220 190 212 198 196" fill="url(#mi2)" opacity=".85"/>
+          <path d="M258 168 C280 178 290 200 292 224 C270 220 250 212 242 196" fill="url(#mi2)" opacity=".85"/>
+          <path d="M206 200 C210 232 220 252 220 268 C220 252 230 232 234 200" fill="url(#mi1)"/>
+        </g>
+        <g stroke="url(#mi1)" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 14">
+          <path d="M60 250 C120 220 160 180 200 120"/>
+        </g>
+        <circle cx="380" cy="60" r="6" fill="#2aa5d8"/>
+        <circle cx="70" cy="70" r="5" fill="#e0338c"/>
+        <circle cx="350" cy="240" r="5" fill="#8b30f0"/>
+      </svg>
+    </div>
   </section>
 
   <!-- CORE VALUES -->
@@ -113,7 +162,7 @@
   <section class="cta">
     <p class="eyebrow reveal">Let's talk growth</p>
     <h2 class="reveal">An agency that treats<br>your growth <span class="serif grad">like our own.</span></h2>
-    <a class="cta__mail" id="magnet" href="mailto:services@zenthoz.lk">services@zenthoz.lk</a>
+    <a class="cta__mail" id="magnet" href="mailto:info@zenthoz.com">info@zenthoz.com</a>
   </section>
 
   <!-- FOOTER -->
@@ -121,7 +170,7 @@
     <div class="footer__grid">
       <div>
         <h3>Agency</h3>
-        Zenthoz — Digital Marketing<br>Sri Lanka · working worldwide<br><span id="clock">00:00:00</span> Sri Lanka
+        Zenthoz — Digital Marketing<br>Global · working worldwide<br><span id="clock">00:00:00</span> local time
       </div>
       <div>
         <h3>Sitemap</h3>
@@ -140,9 +189,9 @@
       </div>
       <div>
         <h3>Enquiries</h3>
-        <a href="mailto:services@zenthoz.lk">services@zenthoz.lk</a><br>
-        <a href="tel:+94769966266">+94 76 996 6266</a><br>
-        <a href="https://wa.me/94769966266" target="_blank" rel="noopener">WhatsApp us</a>
+        <a href="mailto:info@zenthoz.com">info@zenthoz.com</a><br>
+        <a href="tel:+13073012270">+1 (307) 301-2270</a><br>
+        <a href="https://wa.me/13073012270" target="_blank" rel="noopener">WhatsApp us</a>
       </div>
     </div>
     <div class="footer__legal">
@@ -153,7 +202,7 @@
 
 </main>
 
-<a class="wa-float" href="https://wa.me/94769966266" target="_blank" rel="noopener" aria-label="Chat with Zenthoz on WhatsApp">
+<a class="wa-float" href="https://wa.me/13073012270" target="_blank" rel="noopener" aria-label="Chat with Zenthoz on WhatsApp">
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.1-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
 </a>
 

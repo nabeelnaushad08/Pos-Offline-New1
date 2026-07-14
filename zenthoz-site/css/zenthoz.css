@@ -334,6 +334,63 @@ body.ready .hero__title .line>span{transform:translateY(0)}
   border-bottom:2px solid var(--text);padding-bottom:6px;width:max-content}
 .nf a.back:hover{color:var(--accent);border-color:var(--accent)}
 
+/* ---------- liquid ink hero background ---------- */
+.hero{overflow:hidden}
+canvas.ink{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.hero>*:not(.ink){position:relative;z-index:1}
+
+/* ---------- scroll story ---------- */
+.story{height:320vh;padding:0}
+.story__pin{position:sticky;top:0;height:100svh;overflow:hidden;
+  display:grid;grid-template-columns:34px 1fr 1fr;gap:3vw;align-items:center;padding:0 4vw;
+  border-top:1px solid var(--line)}
+.story__bar{width:2px;height:52vh;background:var(--line);justify-self:center;position:relative;overflow:hidden}
+.story__bar i{position:absolute;inset:0;background:var(--grad);transform:scaleY(0);transform-origin:top}
+.story__copy .eyebrow{margin-bottom:5vh;display:block}
+.story__step{margin-bottom:4.5vh;opacity:.22;transform:translateX(0);
+  transition:opacity .5s var(--ease-out),transform .5s var(--ease-out)}
+.story__step.on{opacity:1;transform:translateX(10px)}
+.story__step .n{font-size:12px;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);font-variant-numeric:tabular-nums}
+.story__step h3{font-size:clamp(22px,2.6vw,38px);font-weight:800;letter-spacing:-.02em;margin:8px 0 10px}
+.story__step p{color:var(--muted);max-width:38ch;font-size:15px;line-height:1.65}
+.story__vis{position:relative;height:64vh}
+.story__vis .fig{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .55s var(--ease-out);will-change:transform}
+.story__vis .fig.on{opacity:1}
+.story__vis svg{width:100%;max-width:520px;height:auto}
+@media (max-width:900px){
+  .story{height:auto}
+  .story__pin{position:static;height:auto;grid-template-columns:1fr;padding:8vh 4vw;gap:5vh}
+  .story__bar{display:none}
+  .story__step{opacity:1;transform:none}
+  .story__vis{height:auto}
+  .story__vis .fig{position:static;opacity:1;display:none}
+  .story__vis .fig:first-child{display:flex}
+}
+
+/* ---------- shrinking ZENTHOZ letters ---------- */
+.zsect{padding-top:12vh;padding-bottom:12vh;border-top:1px solid var(--line);text-align:center}
+.zsect .eyebrow{display:block;margin-bottom:6vh}
+.zletters{display:flex;justify-content:space-between;align-items:center;padding:0 1vw;user-select:none}
+.zletters span{display:block;flex:1;font-size:clamp(52px,15.5vw,270px);font-weight:800;line-height:1;
+  letter-spacing:-.02em;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  transition:transform .65s cubic-bezier(.34,1.56,.64,1);cursor:default;will-change:transform}
+.zletters span:hover{transform:scale(.06)}
+
+/* ---------- illustrated statements (about) ---------- */
+.statement--art{display:grid;grid-template-columns:1.4fr 1fr;gap:4vw;align-items:center}
+.statement--art .art{max-width:420px;justify-self:center}
+.statement--art .art svg{width:100%;height:auto}
+@media (max-width:860px){.statement--art{grid-template-columns:1fr}.statement--art .art{max-width:300px}}
+
+/* ---------- service group icons ---------- */
+.svclist__group>h3 svg{display:block;width:56px;height:56px;margin-bottom:18px}
+
+/* ---------- inline figure blocks ---------- */
+.figblock{display:flex;justify-content:center;padding:4vh 0 0}
+.figblock svg{width:100%;max-width:640px;height:auto}
+
 /* ---------- reveals & reduced motion ---------- */
 .reveal{opacity:0;transform:translateY(42px);transition:opacity .9s var(--ease-out),transform .9s var(--ease-out)}
 .reveal.in{opacity:1;transform:none}
