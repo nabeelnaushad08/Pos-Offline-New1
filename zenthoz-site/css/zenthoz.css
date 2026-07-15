@@ -28,6 +28,7 @@
   --accent-2:#7325d1;
   --overlay-text:#fbfaf8;
   --wa:#1fae54;
+  color-scheme:light;
 }
 :root[data-theme="dark"]{
   --bg:#0e0e12;
@@ -39,12 +40,13 @@
   --accent-2:#b57dff;
   --overlay-text:#f2f0ea;
   --wa:#25d366;
+  color-scheme:dark;
 }
 
 /* ---------- base ---------- */
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
-html,body{background:var(--bg);color:var(--text)}
+html{scroll-behavior:smooth;overflow-x:hidden}
+html,body{background:var(--bg);color:var(--text);max-width:100%}
 body{
   font-family:var(--grotesque);font-size:16px;line-height:1.5;
   -webkit-font-smoothing:antialiased;overflow-x:hidden;
@@ -119,6 +121,14 @@ section{padding:0 4vw;position:relative}
   .nav__links,.nav__quote{display:none}
   .nav__burger{display:block}
 }
+@media (max-width:480px){
+  .nav{padding:14px 4vw;gap:10px}
+  .nav__logo{font-size:16px}
+  .nav__right{gap:12px}
+  .theme-toggle{font-size:10px;letter-spacing:.1em;gap:6px}
+  .theme-toggle i{width:10px;height:10px}
+  .nav__burger{font-size:11px}
+}
 
 /* ---------- menu overlay ---------- */
 .menu{position:fixed;inset:0;z-index:900;background:var(--g1);
@@ -155,6 +165,18 @@ section{padding:0 4vw;position:relative}
 .hero__title .line:nth-child(3)>span{transition-delay:.16s}
 body.ready .hero__title .line>span{transform:translateY(0)}
 .hero__title .serif{text-transform:none;letter-spacing:-.02em}
+.hero__main{display:grid;grid-template-columns:1.35fr 1fr;gap:3vw;align-items:center;min-width:0}
+.hero__main .hero__title{font-size:clamp(48px,9.5vw,150px)}
+.hero3d{perspective:1000px}
+.hero3d__tilt{transform-style:preserve-3d;transition:transform .3s var(--ease-out);animation:float3d 6s ease-in-out infinite;will-change:transform}
+.hero3d svg{width:100%;max-width:440px;height:auto;display:block;margin:0 auto;
+  filter:drop-shadow(0 34px 46px rgba(139,48,240,.28))}
+@keyframes float3d{0%,100%{translate:0 0}50%{translate:0 -14px}}
+@media (max-width:900px){
+  .hero__main{grid-template-columns:1fr;gap:6vh}
+  .hero__main .hero__title{font-size:clamp(46px,13.5vw,110px)}
+  .hero3d svg{max-width:300px}
+}
 .hero__foot{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
   font-size:12px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted)}
 .hero__scroll{display:inline-flex;align-items:center;gap:10px}
@@ -208,7 +230,8 @@ body.ready .hero__title .line>span{transform:translateY(0)}
 .svc__plus{font-size:26px;color:var(--muted);transition:transform .45s var(--ease),color .3s}
 .svc.open .svc__plus{transform:rotate(45deg);color:var(--accent)}
 .svc__body{max-height:0;overflow:hidden;transition:max-height .6s var(--ease)}
-.svc__body-in{display:grid;grid-template-columns:64px 1fr;gap:3vw;padding:0 0 34px}
+.svc__body-in{display:grid;grid-template-columns:64px 1.7fr clamp(130px,20vw,220px);gap:3vw;padding:0 0 34px;align-items:center}
+.svc__art svg{width:100%;height:auto;display:block}
 .svc__body p{color:var(--muted);max-width:56ch;font-size:clamp(15px,1.2vw,18px);line-height:1.65}
 .svc__tags{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
 .svc__tags li{font-size:11px;letter-spacing:.18em;text-transform:uppercase;
@@ -216,6 +239,7 @@ body.ready .hero__title .line>span{transform:translateY(0)}
 @media (max-width:700px){
   .svc__row{grid-template-columns:40px 1fr auto}
   .svc__body-in{grid-template-columns:1fr}
+  .svc__art{max-width:210px}
 }
 
 /* ---------- process steps ---------- */
@@ -363,9 +387,8 @@ canvas.ink{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-ev
   .story__pin{position:static;height:auto;grid-template-columns:1fr;padding:8vh 4vw;gap:5vh}
   .story__bar{display:none}
   .story__step{opacity:1;transform:none}
-  .story__vis{height:auto}
-  .story__vis .fig{position:static;opacity:1;display:none}
-  .story__vis .fig:first-child{display:flex}
+  .story__vis{height:auto;display:grid;gap:6vh}
+  .story__vis .fig{position:static;opacity:1;transform:none!important}
 }
 
 /* ---------- shrinking ZENTHOZ letters ---------- */
@@ -375,8 +398,9 @@ canvas.ink{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-ev
 .zletters span{display:block;flex:1;font-size:clamp(52px,15.5vw,270px);font-weight:800;line-height:1;
   letter-spacing:-.02em;
   background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  transition:transform .65s cubic-bezier(.34,1.56,.64,1);cursor:default;will-change:transform}
-.zletters span:hover{transform:scale(.06)}
+  cursor:default;will-change:transform}
+.zletters span.zap{animation:zpop .9s cubic-bezier(.34,1.56,.64,1)}
+@keyframes zpop{0%{transform:scale(1)}45%{transform:scale(.06)}100%{transform:scale(1)}}
 
 /* ---------- illustrated statements (about) ---------- */
 .statement--art{display:grid;grid-template-columns:1.4fr 1fr;gap:4vw;align-items:center}
@@ -390,6 +414,54 @@ canvas.ink{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-ev
 /* ---------- inline figure blocks ---------- */
 .figblock{display:flex;justify-content:center;padding:4vh 0 0}
 .figblock svg{width:100%;max-width:640px;height:auto}
+
+/* ---------- service cards (services page) ---------- */
+.svcgrid-head{display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding:4vh 0;flex-wrap:wrap;border-top:1px solid var(--line)}
+.btn-ghost{display:inline-block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  border:1px solid var(--text);border-radius:999px;padding:12px 24px;
+  transition:background .3s,color .3s}
+.btn-ghost:hover{background:var(--text);color:var(--bg)}
+.svcgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;padding-bottom:10vh}
+.scard{border:1px solid var(--line);background:var(--bg);overflow:hidden;border-radius:4px;
+  opacity:0;transform:translateY(56px) scale(.96);
+  transition:opacity .7s var(--ease-out),transform .7s var(--ease-out),box-shadow .35s}
+.scard.in{opacity:1;transform:none}
+.scard:hover{box-shadow:0 24px 60px rgba(23,21,28,.14)}
+.scard canvas{width:100%;height:150px;display:block}
+.scard__body{padding:20px 22px 26px}
+.scard__tag{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
+.scard h3{font-size:19px;font-weight:700;margin:10px 0 8px;letter-spacing:-.01em}
+.scard p{color:var(--muted);font-size:14px;line-height:1.6}
+@media (max-width:980px){.svcgrid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:620px){.svcgrid{grid-template-columns:1fr}}
+
+/* ---------- contact form ---------- */
+.cform{padding-bottom:12vh}
+.cform form{display:grid;grid-template-columns:1fr 1fr;gap:30px 3vw;max-width:920px}
+.ctype{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap}
+.ctype label{border:1px solid var(--line);border-radius:999px;padding:11px 20px;
+  font-size:12px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;
+  transition:background .3s,color .3s,border-color .3s}
+.ctype input{position:absolute;opacity:0;pointer-events:none}
+.ctype label:has(input:checked){background:var(--text);color:var(--bg);border-color:var(--text)}
+.field{display:flex;flex-direction:column;gap:9px;min-width:0}
+.field.full{grid-column:1/-1}
+.field label{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted)}
+.field input,.field textarea{background:transparent;border:none;border-bottom:1px solid var(--line);
+  padding:10px 2px;font:inherit;color:var(--text);border-radius:0;width:100%}
+.field input:focus,.field textarea:focus{outline:none;border-bottom-color:var(--accent)}
+.field textarea{min-height:130px;resize:vertical}
+.meeting-only{display:none}
+form.is-meeting .meeting-only{display:flex}
+.cform button[type="submit"]{grid-column:1/-1;justify-self:start;cursor:pointer;
+  font-size:13px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;
+  color:#fff;background:var(--grad);border-radius:999px;padding:16px 34px;border:none;
+  transition:transform .3s var(--ease-out),box-shadow .3s}
+.cform button[type="submit"]:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(224,51,140,.35)}
+.cform button[type="submit"]:disabled{opacity:.6;transform:none;box-shadow:none;cursor:wait}
+.form-status{grid-column:1/-1;font-size:15px;color:var(--accent);min-height:1.4em}
+@media (max-width:640px){.cform form{grid-template-columns:1fr}.field.full,.ctype,.form-status{grid-column:auto}.cform button[type="submit"]{grid-column:auto;width:100%}}
 
 /* ---------- reveals & reduced motion ---------- */
 .reveal{opacity:0;transform:translateY(42px);transition:opacity .9s var(--ease-out),transform .9s var(--ease-out)}

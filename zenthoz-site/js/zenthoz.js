@@ -140,35 +140,43 @@
     });
   });
 
+  /* ---------- generative brand art painter (shared) ---------- */
+  var artPalettes = [
+    ["#8b30f0", "#fbfaf8", "#17151c"],
+    ["#e0338c", "#17151c", "#fbfaf8"],
+    ["#2aa5d8", "#8b30f0", "#0e0e12"],
+    ["#17151c", "#e0338c", "#f2f0ea"]
+  ];
+  function paintArt(c, idx, w, h, mark){
+    c.width = w; c.height = h;
+    var pal = artPalettes[idx % artPalettes.length],
+        g = c.getContext("2d");
+    g.fillStyle = pal[2]; g.fillRect(0, 0, w, h);
+    for (var i = 0; i < 26; i++){
+      var t = (i * 97 + idx * 31) % 100 / 100;
+      var cy = h * .12 + ((i * 53 + idx * 71) % 100) / 100 * h * .76;
+      var grad = g.createRadialGradient(w * .12 + t * w * .76, cy, 6, w * .12 + t * w * .76, cy, (h * .18) + t * h * .3);
+      grad.addColorStop(0, pal[i % 2] + "cc");
+      grad.addColorStop(1, pal[i % 2] + "00");
+      g.fillStyle = grad;
+      g.fillRect(0, 0, w, h);
+    }
+    g.fillStyle = "rgba(14,14,18,.22)";
+    for (var y = 0; y < h; y += 4){ g.fillRect(0, y, w, 1); }
+    if (mark){
+      g.fillStyle = pal[1];
+      g.font = "700 22px Helvetica, Arial, sans-serif";
+      g.fillText("ZENTHOZ", 24, h - 34);
+    }
+  }
+
   /* ---------- work previews (generative, follow cursor) ---------- */
   var preview = document.getElementById("preview");
   var workRows = document.querySelectorAll(".wk[data-project]");
   if (preview && workRows.length){
-    var palettes = [
-      ["#8b30f0", "#fbfaf8", "#17151c"],
-      ["#e0338c", "#17151c", "#fbfaf8"],
-      ["#2aa5d8", "#8b30f0", "#0e0e12"],
-      ["#17151c", "#e0338c", "#f2f0ea"]
-    ];
-    var canvases = palettes.map(function(pal, idx){
+    var canvases = artPalettes.map(function(_, idx){
       var c = document.createElement("canvas");
-      c.width = 480; c.height = 600;
-      var g = c.getContext("2d");
-      g.fillStyle = pal[2]; g.fillRect(0, 0, 480, 600);
-      for (var i = 0; i < 26; i++){
-        var t = (i * 97 + idx * 31) % 100 / 100;
-        var cy = 80 + ((i * 53 + idx * 71) % 100) / 100 * 440;
-        var grad = g.createRadialGradient(60 + t * 360, cy, 8, 60 + t * 360, cy, 90 + t * 140);
-        grad.addColorStop(0, pal[i % 2] + "cc");
-        grad.addColorStop(1, pal[i % 2] + "00");
-        g.fillStyle = grad;
-        g.fillRect(0, 0, 480, 600);
-      }
-      g.fillStyle = "rgba(14,14,18,.22)";
-      for (var y = 0; y < 600; y += 4){ g.fillRect(0, y, 480, 1); }
-      g.fillStyle = pal[1];
-      g.font = "700 22px Helvetica, Arial, sans-serif";
-      g.fillText("ZENTHOZ", 24, 566);
+      paintArt(c, idx, 480, 600, true);
       preview.appendChild(c);
       return c;
     });
@@ -320,5 +328,140 @@
       addEventListener("scroll", runStory, {passive:true});
       runStory();
     }
+  }
+
+  /* ---------- 3D hero visual tilt ---------- */
+  var tilt = document.querySelector(".hero3d__tilt");
+  if (tilt && window.matchMedia("(pointer:fine)").matches && !reduced){
+    var tiltHost = tilt.closest(".hero");
+    tiltHost.addEventListener("mousemove", function(e){
+      var r = tiltHost.getBoundingClientRect(),
+          rx = ((e.clientY - r.top) / r.height - .5) * -14,
+          ry = ((e.clientX - r.left) / r.width - .5) * 18;
+      tilt.style.transform = "rotateX(" + rx + "deg) rotateY(" + ry + "deg)";
+    });
+    tiltHost.addEventListener("mouseleave", function(){ tilt.style.transform = ""; });
+  }
+
+  /* ---------- ZENTHOZ letters: shrink once, spring back ---------- */
+  document.querySelectorAll(".zletters span").forEach(function(l){
+    var pop = function(){ if (!reduced) l.classList.add("zap"); };
+    l.addEventListener("mouseenter", pop);
+    l.addEventListener("click", pop);
+    l.addEventListener("animationend", function(){ l.classList.remove("zap"); });
+  });
+
+  /* ---------- services page: animated cards ---------- */
+  var svcGrid = document.getElementById("svcGrid");
+  if (svcGrid){
+    var SERVICES = [
+      ["Growth & Performance","Search Engine Optimization (SEO)","Own the searches that matter — technical fixes, content and authority that move you up the rankings and keep you there."],
+      ["Growth & Performance","Pay-Per-Click Advertising (PPC)","Search, shopping, display and remarketing campaigns managed against one number: your return on ad spend."],
+      ["Growth & Performance","Social Media Advertising","Paid campaigns on Meta, TikTok, LinkedIn and beyond — targeted, tested and tuned for conversions, not likes."],
+      ["Growth & Performance","Conversion Rate Optimization (CRO)","Turn more of the traffic you already have into buyers through testing, heatmaps and journey fixes."],
+      ["Growth & Performance","Analytics & Reporting","Dashboards that show what's actually driving revenue — so every decision is backed by data."],
+      ["Growth & Performance","Affiliate Marketing","Partner networks that sell for you — recruited, managed and paid only on performance."],
+      ["Growth & Performance","Local Business Marketing","Dominate your neighbourhood: maps, reviews and local search that fill real-world locations."],
+      ["Growth & Performance","Mobile Marketing","Reach customers on the device they never put down — app campaigns, SMS and mobile-first funnels."],
+      ["Brand & Creative","Brand Strategy & Development","Positioning, naming and identity systems that make every other channel work harder."],
+      ["Brand & Creative","Graphic Design","Scroll-stopping visuals for every touchpoint — ads, decks, packaging and social."],
+      ["Brand & Creative","Photography Services","Product, lifestyle and brand photography that makes people stop and look twice."],
+      ["Brand & Creative","Video Marketing","Short-form, ads and brand films — scripted, shot and edited to hold attention and convert."],
+      ["Brand & Creative","Digital PR Solutions","Earn coverage and links that build authority, trust and search power at the same time."],
+      ["Brand & Creative","Online Reputation Management","Own your search results and reviews — protect the brand you've worked to build."],
+      ["Web & Commerce","Web Design & Development","Conversion-first websites built to sell — fast, responsive and engineered around the customer journey."],
+      ["Web & Commerce","E-commerce Marketing","Full-funnel growth for online stores: traffic, merchandising, retention and repeat purchase."],
+      ["Web & Commerce","Marketplace Management","Win the buy box — listings, ads and operations on Amazon and beyond."],
+      ["Web & Commerce","Marketing Automation","Journeys that run themselves — lead scoring, nurture flows and lifecycle triggers."],
+      ["Web & Commerce","Emerging Technologies","AI, personalization and whatever comes next — piloted safely, deployed for advantage."],
+      ["Content & Engagement","Content Marketing","Strategy, writing and distribution that turn expertise into pipeline."],
+      ["Content & Engagement","Social Media Marketing","Feeds that build community — organic strategy, content calendars and daily engagement."],
+      ["Content & Engagement","Email Marketing","Automated journeys and campaigns that nurture strangers into customers and customers into fans."],
+      ["Content & Engagement","Podcast Marketing","Launch, produce and promote audio that positions you as the voice of your industry."],
+      ["Content & Engagement","Webinar Marketing","Live events that educate, qualify and convert — from invite funnel to replay campaign."],
+      ["Content & Engagement","Customer Experience (CX)","Map and fix every step of the journey so buying from you feels effortless."],
+      ["Content & Engagement","Marketing Consulting","Senior strategy on demand — audits, roadmaps and coaching for in-house teams."]
+    ];
+    SERVICES.forEach(function(s, i){
+      var card = document.createElement("article");
+      card.className = "scard";
+      var cv = document.createElement("canvas");
+      paintArt(cv, i, 400, 200, false);
+      var body = document.createElement("div");
+      body.className = "scard__body";
+      var tag = document.createElement("span"); tag.className = "scard__tag"; tag.textContent = s[0];
+      var h = document.createElement("h3"); h.textContent = s[1];
+      var p = document.createElement("p"); p.textContent = s[2];
+      body.appendChild(tag); body.appendChild(h); body.appendChild(p);
+      card.appendChild(cv); card.appendChild(body);
+      card.style.transitionDelay = (i % 3) * 90 + "ms";
+      svcGrid.appendChild(card);
+    });
+    var cards = svcGrid.querySelectorAll(".scard");
+    if (reduced){
+      cards.forEach(function(c){ c.classList.add("in"); });
+    } else {
+      var cio = new IntersectionObserver(function(entries){
+        entries.forEach(function(en){
+          if (en.isIntersecting){ en.target.classList.add("in"); cio.unobserve(en.target); }
+        });
+      }, {threshold: .12});
+      cards.forEach(function(c){ cio.observe(c); });
+    }
+    var allBtn = document.getElementById("svcAll");
+    if (allBtn){
+      allBtn.addEventListener("click", function(){
+        cards.forEach(function(c){ c.style.transitionDelay = "0ms"; c.classList.add("in"); });
+        allBtn.textContent = "All " + cards.length + " services shown";
+        allBtn.disabled = true;
+        allBtn.style.opacity = ".55";
+      });
+    }
+  }
+
+  /* ---------- contact form (email relay + mail-app fallback) ---------- */
+  var cf = document.getElementById("contactForm");
+  if (cf){
+    var statusEl = document.getElementById("formStatus"),
+        submitBtn = cf.querySelector('button[type="submit"]');
+    cf.querySelectorAll('input[name="enquiry_type"]').forEach(function(r){
+      r.addEventListener("change", function(){
+        cf.classList.toggle("is-meeting", r.value === "Book a meeting" && r.checked);
+      });
+    });
+    cf.addEventListener("submit", function(e){
+      e.preventDefault();
+      var data = new FormData(cf),
+          type = data.get("enquiry_type") || "Project enquiry";
+      if (data.get("_honey")) return; // spam bot filled the hidden field
+      data.set("_subject", type + " from " + (data.get("name") || "website") + " — zenthoz.com");
+      statusEl.textContent = "Sending…";
+      submitBtn.disabled = true;
+      fetch("https://formsubmit.co/ajax/info@zenthoz.com", {
+        method: "POST",
+        body: data,
+        headers: {Accept: "application/json"}
+      }).then(function(r){
+        if (!r.ok) throw new Error("relay error");
+        return r.json();
+      }).then(function(){
+        cf.reset();
+        cf.classList.remove("is-meeting");
+        statusEl.textContent = "✓ Sent — we'll get back to you within 24 hours.";
+        submitBtn.disabled = false;
+      }).catch(function(){
+        // offline or relay unreachable: open the visitor's mail app pre-filled instead
+        var lines = [];
+        ["name","email","phone","company","meeting_date","meeting_time","message"].forEach(function(k){
+          var v = data.get(k);
+          if (v) lines.push(k.replace("_", " ") + ": " + v);
+        });
+        location.href = "mailto:info@zenthoz.com?subject=" +
+          encodeURIComponent(type + " — zenthoz.com") +
+          "&body=" + encodeURIComponent(lines.join("\n"));
+        statusEl.textContent = "Opening your email app to send this instead…";
+        submitBtn.disabled = false;
+      });
+    });
   }
 })();

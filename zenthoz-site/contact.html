@@ -85,6 +85,53 @@
     <p class="hero__intro reveal" style="max-width:60ch">If you're looking for an agency to "manage marketing", we're not the right fit. If you want a partner who treats your business like their own and is obsessed with results — you're exactly who we built Zenthoz for.</p>
   </section>
 
+  <!-- CONTACT FORM -->
+  <section class="cform" id="form">
+    <div class="section-head rule">
+      <h2 class="reveal">Send a brief<br>or book a call</h2>
+      <span class="eyebrow reveal">Straight to info@zenthoz.com</span>
+    </div>
+    <form id="contactForm" action="https://formsubmit.co/info@zenthoz.com" method="POST" novalidate="">
+      <div class="ctype" role="radiogroup" aria-label="What is this about?">
+        <label><input type="radio" name="enquiry_type" value="Project enquiry" checked>Project enquiry</label>
+        <label><input type="radio" name="enquiry_type" value="Book a meeting">Book a meeting</label>
+      </div>
+      <div class="field">
+        <label for="f-name">Your name *</label>
+        <input id="f-name" name="name" type="text" required autocomplete="name" placeholder="Jane Smith">
+      </div>
+      <div class="field">
+        <label for="f-email">Email *</label>
+        <input id="f-email" name="email" type="email" required autocomplete="email" placeholder="jane@company.com">
+      </div>
+      <div class="field">
+        <label for="f-phone">Phone / WhatsApp</label>
+        <input id="f-phone" name="phone" type="tel" autocomplete="tel" placeholder="+1 …">
+      </div>
+      <div class="field">
+        <label for="f-company">Company / website</label>
+        <input id="f-company" name="company" type="text" placeholder="company.com">
+      </div>
+      <div class="field meeting-only">
+        <label for="f-date">Preferred date</label>
+        <input id="f-date" name="meeting_date" type="date">
+      </div>
+      <div class="field meeting-only">
+        <label for="f-time">Preferred time</label>
+        <input id="f-time" name="meeting_time" type="time">
+      </div>
+      <div class="field full">
+        <label for="f-msg">What are you trying to grow? *</label>
+        <textarea id="f-msg" name="message" required placeholder="Tell us about your business, your goals and where you're stuck…"></textarea>
+      </div>
+      <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_template" value="table">
+      <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
+      <button type="submit">Send to Zenthoz →</button>
+    </form>
+  </section>
+
   <!-- MARQUEE -->
   <div class="marquee" aria-hidden="true">
     <div class="marquee__track">
@@ -119,10 +166,9 @@
       </div>
       <div>
         <h3>Social</h3>
-        <a href="#" rel="noopener">Facebook</a><br>
-        <a href="#" rel="noopener">Instagram</a><br>
-        <a href="#" rel="noopener">LinkedIn</a><br>
-        <a href="#" rel="noopener">X / Twitter</a>
+        <a href="https://www.instagram.com/zenthoz.global?igsh=MW15OWFnbjI1czBrbg==" target="_blank" rel="noopener">Instagram</a><br>
+        <a href="https://www.facebook.com/share/1UjCZQgR4z/" target="_blank" rel="noopener">Facebook</a><br>
+        <a href="https://www.linkedin.com/company/zenthoz/" target="_blank" rel="noopener">LinkedIn</a>
       </div>
       <div>
         <h3>Enquiries</h3>
