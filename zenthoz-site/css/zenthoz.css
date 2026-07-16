@@ -45,11 +45,13 @@
 
 /* ---------- base ---------- */
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;overflow-x:hidden}
+/* overflow-x must be `clip`, not `hidden`: hidden makes body a scroll
+   container and silently breaks position:sticky (the pinned story). */
+html{scroll-behavior:smooth;overflow-x:clip}
 html,body{background:var(--bg);color:var(--text);max-width:100%}
 body{
   font-family:var(--grotesque);font-size:16px;line-height:1.5;
-  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;overflow-x:clip;
   transition:background .4s,color .4s;
 }
 body.locked{overflow:hidden}
@@ -165,17 +167,16 @@ section{padding:0 4vw;position:relative}
 .hero__title .line:nth-child(3)>span{transition-delay:.16s}
 body.ready .hero__title .line>span{transform:translateY(0)}
 .hero__title .serif{text-transform:none;letter-spacing:-.02em}
-.hero__main{display:grid;grid-template-columns:1.35fr 1fr;gap:3vw;align-items:center;min-width:0}
-.hero__main .hero__title{font-size:clamp(48px,9.5vw,150px)}
-.hero3d{perspective:1000px}
-.hero3d__tilt{transform-style:preserve-3d;transition:transform .3s var(--ease-out);animation:float3d 6s ease-in-out infinite;will-change:transform}
-.hero3d svg{width:100%;max-width:440px;height:auto;display:block;margin:0 auto;
-  filter:drop-shadow(0 34px 46px rgba(139,48,240,.28))}
+/* hero image sits BEHIND the big type on desktop, below it on mobile */
+.hero__img{position:absolute;right:0;top:50%;transform:translateY(-50%);
+  width:min(46vw,580px);z-index:0!important;pointer-events:none}
+.hero3d__tilt{transform-style:preserve-3d;transition:transform .3s var(--ease-out);
+  animation:float3d 6s ease-in-out infinite;will-change:transform}
+.hero__img img,.hero__img svg{width:100%;height:auto;display:block;
+  filter:drop-shadow(0 34px 46px rgba(139,48,240,.25))}
 @keyframes float3d{0%,100%{translate:0 0}50%{translate:0 -14px}}
 @media (max-width:900px){
-  .hero__main{grid-template-columns:1fr;gap:6vh}
-  .hero__main .hero__title{font-size:clamp(46px,13.5vw,110px)}
-  .hero3d svg{max-width:300px}
+  .hero__img{position:static;transform:none;width:min(80vw,360px);margin:3vh auto 0}
 }
 .hero__foot{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
   font-size:12px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted)}
@@ -361,7 +362,7 @@ body.ready .hero__title .line>span{transform:translateY(0)}
 /* ---------- liquid ink hero background ---------- */
 .hero{overflow:hidden}
 canvas.ink{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
-.hero>*:not(.ink){position:relative;z-index:1}
+.hero>*:not(.ink):not(.hero__img){position:relative;z-index:1}
 
 /* ---------- scroll story ---------- */
 .story{height:320vh;padding:0}
@@ -415,6 +416,23 @@ canvas.ink{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-ev
 .figblock{display:flex;justify-content:center;padding:4vh 0 0}
 .figblock svg{width:100%;max-width:640px;height:auto}
 
+/* ---------- trusted brands logo strip ---------- */
+.brands{padding:9vh 0 7vh;border-bottom:1px solid var(--line)}
+.brands .eyebrow{display:block;text-align:center;margin-bottom:5vh}
+.brands__strip{overflow:hidden;white-space:nowrap}
+.brands__track{display:inline-flex;align-items:center;gap:3.2vw;
+  animation:scroll 36s linear infinite;padding-right:3.2vw}
+.brands__track img{height:60px;width:auto;max-width:170px;object-fit:contain;
+  background:#fff;border-radius:12px;padding:9px 16px;
+  box-shadow:0 4px 20px rgba(23,21,28,.08)}
+@media (max-width:600px){.brands__track img{height:48px;max-width:130px}}
+
+/* ---------- service accordion / card imagery ---------- */
+.svc__art img{width:100%;height:auto;display:block;border-radius:8px}
+.svc__art img ~ svg{display:none} /* real image wins; svg shows only if the img 404s and removes itself */
+.scard__media{position:relative;height:170px;overflow:hidden;background:var(--bg-2)}
+.scard__media img,.scard__media canvas{width:100%;height:100%;object-fit:cover;display:block}
+
 /* ---------- service cards (services page) ---------- */
 .svcgrid-head{display:flex;justify-content:space-between;align-items:center;gap:16px;
   padding:4vh 0;flex-wrap:wrap;border-top:1px solid var(--line)}
@@ -428,7 +446,6 @@ canvas.ink{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-ev
   transition:opacity .7s var(--ease-out),transform .7s var(--ease-out),box-shadow .35s}
 .scard.in{opacity:1;transform:none}
 .scard:hover{box-shadow:0 24px 60px rgba(23,21,28,.14)}
-.scard canvas{width:100%;height:150px;display:block}
 .scard__body{padding:20px 22px 26px}
 .scard__tag{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
 .scard h3{font-size:19px;font-weight:700;margin:10px 0 8px;letter-spacing:-.01em}

@@ -351,6 +351,10 @@
     l.addEventListener("animationend", function(){ l.classList.remove("zap"); });
   });
 
+  /* ---------- trusted brands: duplicate track for seamless loop ---------- */
+  var brandsTrack = document.getElementById("brandsTrack");
+  if (brandsTrack){ brandsTrack.innerHTML += brandsTrack.innerHTML; }
+
   /* ---------- services page: animated cards ---------- */
   var svcGrid = document.getElementById("svcGrid");
   if (svcGrid){
@@ -382,18 +386,45 @@
       ["Content & Engagement","Customer Experience (CX)","Map and fix every step of the journey so buying from you feels effortless."],
       ["Content & Engagement","Marketing Consulting","Senior strategy on demand — audits, roadmaps and coaching for in-house teams."]
     ];
+    // real imagery per service where supplied; generative art otherwise
+    var SVC_IMG = {
+      "Web Design & Development": "svc-web.png",
+      "Search Engine Optimization (SEO)": "svc-seo.png",
+      "Social Media Marketing": "svc-social.png",
+      "Social Media Advertising": "svc-social.png",
+      "Pay-Per-Click Advertising (PPC)": "svc-ppc.png",
+      "Content Marketing": "svc-content.png",
+      "Email Marketing": "svc-email.png",
+      "Brand Strategy & Development": "svc-brand.png"
+    };
     SERVICES.forEach(function(s, i){
       var card = document.createElement("article");
       card.className = "scard";
-      var cv = document.createElement("canvas");
-      paintArt(cv, i, 400, 200, false);
+      var media = document.createElement("div");
+      media.className = "scard__media";
+      var useCanvas = function(){
+        media.innerHTML = "";
+        var cv = document.createElement("canvas");
+        paintArt(cv, i, 400, 200, false);
+        media.appendChild(cv);
+      };
+      if (SVC_IMG[s[1]]){
+        var im = document.createElement("img");
+        im.src = "assets/img/" + SVC_IMG[s[1]];
+        im.alt = "";
+        im.loading = "lazy";
+        im.onerror = useCanvas;
+        media.appendChild(im);
+      } else {
+        useCanvas();
+      }
       var body = document.createElement("div");
       body.className = "scard__body";
       var tag = document.createElement("span"); tag.className = "scard__tag"; tag.textContent = s[0];
       var h = document.createElement("h3"); h.textContent = s[1];
       var p = document.createElement("p"); p.textContent = s[2];
       body.appendChild(tag); body.appendChild(h); body.appendChild(p);
-      card.appendChild(cv); card.appendChild(body);
+      card.appendChild(media); card.appendChild(body);
       card.style.transitionDelay = (i % 3) * 90 + "ms";
       svcGrid.appendChild(card);
     });
