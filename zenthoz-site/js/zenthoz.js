@@ -199,6 +199,17 @@
       pvCache[key] = wrap;
       return wrap;
     };
+    // inline image below each project — shown by CSS on mobile only
+    workRows.forEach(function(row){
+      if (!row.dataset.img) return;
+      var mi = new Image();
+      mi.className = "wk__mimg";
+      mi.alt = "";
+      mi.loading = "lazy";
+      mi.onerror = function(){ mi.remove(); };
+      mi.src = row.dataset.img;
+      row.appendChild(mi);
+    });
     var px = 0, py = 0, tx = 0, ty = 0;
     workRows.forEach(function(row, idx){
       row.addEventListener("mouseenter", function(){

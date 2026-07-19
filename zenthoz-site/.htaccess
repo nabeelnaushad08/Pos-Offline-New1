@@ -1,0 +1,16 @@
+# Zenthoz static site — Apache config for Hostinger
+Options -Indexes
+ErrorDocument 404 /404.html
+
+# serve index.html before any leftover index.php at the root
+DirectoryIndex index.html index.php
+
+# sensible browser caching for assets
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/webp "access plus 30 days"
+  ExpiresByType image/png "access plus 30 days"
+  ExpiresByType image/jpeg "access plus 30 days"
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+</IfModule>
