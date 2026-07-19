@@ -149,6 +149,7 @@ section{padding:0 4vw;position:relative}
 .menu.open .menu__links a:nth-child(3) span{transition-delay:.20s}
 .menu.open .menu__links a:nth-child(4) span{transition-delay:.26s}
 .menu.open .menu__links a:nth-child(5) span{transition-delay:.32s}
+.menu.open .menu__links a:nth-child(6) span{transition-delay:.38s}
 .menu__meta{margin-top:5vh;display:flex;flex-wrap:wrap;gap:24px 40px;
   font-size:12px;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
 
@@ -291,9 +292,12 @@ body.ready .hero__title .line>span{transform:translateY(0)}
 .svclist{border-top:1px solid var(--line);padding-bottom:4vh}
 .svclist__group{display:grid;grid-template-columns:1fr 1.9fr;gap:4vw;padding:8vh 0;border-bottom:1px solid var(--line)}
 .svclist__cat{align-self:start;position:sticky;top:110px}
-.svclist__cat h3{font-size:clamp(22px,2.6vw,36px);font-weight:800;text-transform:uppercase;letter-spacing:-.02em;max-width:14ch}
-.svclist__cat img{width:100%;max-width:400px;height:auto;border-radius:12px;margin-top:22px;display:block;
-  box-shadow:0 18px 50px rgba(23,21,28,.14)}
+.svclist__cat h3{font-size:clamp(34px,4.4vw,68px);font-weight:800;text-transform:uppercase;
+  letter-spacing:-.035em;line-height:.95;max-width:12ch}
+.svclist__cat h3 .serif{text-transform:none;letter-spacing:-.02em;font-weight:400}
+.svclist__cat img{width:100%;max-width:460px;height:auto;margin-top:30px;display:block;
+  filter:drop-shadow(0 30px 46px rgba(139,48,240,.22));
+  animation:float3d 6s ease-in-out infinite}
 .svclist ul{display:block}
 .svclist li{display:grid;grid-template-columns:44px 1fr;gap:16px;align-items:baseline;
   padding:20px 0;border-bottom:1px solid var(--line)}

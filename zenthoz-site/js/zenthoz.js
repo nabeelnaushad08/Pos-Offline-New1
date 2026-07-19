@@ -228,14 +228,6 @@
     mag.addEventListener("mouseleave", function(){ mag.style.transform = ""; });
   }
 
-  /* ---------- local clock ---------- */
-  var clock = document.getElementById("clock");
-  if (clock){
-    var fmt = new Intl.DateTimeFormat("en-GB", {hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:false});
-    var tickClock = function(){ clock.textContent = fmt.format(new Date()); };
-    tickClock(); setInterval(tickClock, 1000);
-  }
-
   /* ---------- liquid ink hero background ---------- */
   var inkCv = document.querySelector("canvas.ink");
   if (inkCv && !reduced){
