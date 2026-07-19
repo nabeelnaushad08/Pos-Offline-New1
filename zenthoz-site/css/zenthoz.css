@@ -282,22 +282,29 @@ body.ready .hero__title .line>span{transform:translateY(0)}
   transition:opacity .35s var(--ease-out),transform .35s var(--ease-out);
   overflow:hidden;border-radius:2px;box-shadow:0 30px 80px rgba(23,21,28,.25)}
 .preview.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
-.preview canvas{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .3s}
-.preview canvas.on{opacity:1}
+.preview .pv{position:absolute;inset:0;opacity:0;transition:opacity .3s}
+.preview .pv.on{opacity:1}
+.preview .pv img,.preview .pv canvas{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
 @media (pointer:coarse){.preview{display:none}}
 
-/* ---------- services full list ---------- */
+/* ---------- services full list (minimalist: category left, services right) ---------- */
 .svclist{border-top:1px solid var(--line);padding-bottom:4vh}
-.svclist__group{display:grid;grid-template-columns:1fr 2.4fr;gap:3vw;padding:7vh 0;border-bottom:1px solid var(--line)}
-.svclist__group>h3{font-size:clamp(22px,2.6vw,36px);font-weight:800;text-transform:uppercase;letter-spacing:-.02em;max-width:12ch}
-.svclist ul{display:grid;grid-template-columns:1fr 1fr;gap:0 3vw}
-.svclist li{display:flex;gap:16px;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--line);font-size:clamp(16px,1.5vw,21px);font-weight:600}
-.svclist li:nth-last-child(-n+2){border-bottom:none}
+.svclist__group{display:grid;grid-template-columns:1fr 1.9fr;gap:4vw;padding:8vh 0;border-bottom:1px solid var(--line)}
+.svclist__cat{align-self:start;position:sticky;top:110px}
+.svclist__cat h3{font-size:clamp(22px,2.6vw,36px);font-weight:800;text-transform:uppercase;letter-spacing:-.02em;max-width:14ch}
+.svclist__cat img{width:100%;max-width:400px;height:auto;border-radius:12px;margin-top:22px;display:block;
+  box-shadow:0 18px 50px rgba(23,21,28,.14)}
+.svclist ul{display:block}
+.svclist li{display:grid;grid-template-columns:44px 1fr;gap:16px;align-items:baseline;
+  padding:20px 0;border-bottom:1px solid var(--line)}
+.svclist li:last-child{border-bottom:none}
 .svclist li i{font-style:normal;font-size:12px;color:var(--accent);letter-spacing:.1em;font-variant-numeric:tabular-nums}
+.svclist li b{display:block;font-size:clamp(17px,1.6vw,22px);font-weight:700;letter-spacing:-.01em}
+.svclist li p{margin-top:6px;color:var(--muted);font-size:15px;line-height:1.6;max-width:52ch}
 @media (max-width:860px){
-  .svclist__group{grid-template-columns:1fr}
-  .svclist ul{grid-template-columns:1fr}
-  .svclist li:nth-last-child(2){border-bottom:1px solid var(--line)}
+  .svclist__group{grid-template-columns:1fr;gap:5vh}
+  .svclist__cat{position:static}
+  .svclist li:last-child{border-bottom:1px solid var(--line)}
 }
 
 /* ---------- contact cards ---------- */
@@ -416,16 +423,15 @@ canvas.ink{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-ev
 .figblock{display:flex;justify-content:center;padding:4vh 0 0}
 .figblock svg{width:100%;max-width:640px;height:auto}
 
-/* ---------- trusted brands logo strip ---------- */
+/* ---------- valued partners logo strip (JS-driven: drag + hover-pause) ---------- */
 .brands{padding:9vh 0 7vh;border-bottom:1px solid var(--line)}
 .brands .eyebrow{display:block;text-align:center;margin-bottom:5vh}
-.brands__strip{overflow:hidden;white-space:nowrap}
-.brands__track{display:inline-flex;align-items:center;gap:3.2vw;
-  animation:scroll 36s linear infinite;padding-right:3.2vw}
-.brands__track img{height:60px;width:auto;max-width:170px;object-fit:contain;
-  background:#fff;border-radius:12px;padding:9px 16px;
-  box-shadow:0 4px 20px rgba(23,21,28,.08)}
-@media (max-width:600px){.brands__track img{height:48px;max-width:130px}}
+.brands__strip{overflow:hidden;white-space:nowrap;user-select:none}
+.brands__track{display:inline-flex;align-items:center;gap:3.4vw;padding-right:3.4vw}
+.brands__track img{height:104px;width:auto;max-width:240px;object-fit:contain;
+  background:#fff;border-radius:16px;padding:14px 22px;
+  box-shadow:0 6px 26px rgba(23,21,28,.1);pointer-events:none}
+@media (max-width:600px){.brands__track img{height:72px;max-width:170px;padding:10px 14px}}
 
 /* ---------- service accordion / card imagery ---------- */
 .svc__art img{width:100%;height:auto;display:block;border-radius:8px}
@@ -452,6 +458,30 @@ canvas.ink{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-ev
 .scard p{color:var(--muted);font-size:14px;line-height:1.6}
 @media (max-width:980px){.svcgrid{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:620px){.svcgrid{grid-template-columns:1fr}}
+
+/* ---------- reviews (draggable carousel) ---------- */
+.reviews{padding:12vh 0 12vh;border-top:1px solid var(--line)}
+.reviews .section-head{padding:0 4vw 6vh}
+.reviews__strip{overflow:hidden;user-select:none}
+.reviews__track{display:inline-flex;align-items:stretch;gap:22px;padding:0 22px}
+.rcard{flex:0 0 min(430px,84vw);white-space:normal;display:flex;flex-direction:column;
+  background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:30px 30px 26px;
+  transition:box-shadow .3s,transform .3s}
+.rcard:hover{box-shadow:0 22px 54px rgba(23,21,28,.12);transform:translateY(-4px)}
+.rcard .q{font-family:var(--serif);font-style:italic;font-size:52px;line-height:.6;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent}
+.rcard p{color:var(--muted);font-size:15px;line-height:1.7;margin:16px 0 22px;flex:1}
+.rcard b{display:block;font-size:15px;font-weight:700;letter-spacing:-.01em}
+.rcard span{display:block;margin-top:4px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent)}
+.rcard .stars{margin-top:14px;font-size:13px;letter-spacing:.2em;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent}
+
+/* ---------- work rows: group headings + link chip ---------- */
+.work h4.wgroup{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);
+  padding:7vh 0 2vh}
+.wk__meta .live{color:var(--accent)}
 
 /* ---------- contact form ---------- */
 .cform{padding-bottom:12vh}

@@ -65,13 +65,72 @@
   </section>
 
   <!-- FULL SERVICE LIST -->
-  <!-- SERVICE CARDS -->
-  <section style="padding-bottom:4vh">
-    <div class="svcgrid-head">
-      <span class="eyebrow">All 26 services — they reveal as you scroll, or</span>
-      <button class="btn-ghost" id="svcAll" type="button">Show all at once</button>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs><linearGradient id="ico" x1="0" y1="0" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8b30f0"/><stop offset=".5" stop-color="#e0338c"/><stop offset="1" stop-color="#2aa5d8"/>
+    </linearGradient></defs>
+  </svg>
+
+  <!-- SERVICES BY DISCIPLINE -->
+  <section class="svclist" style="padding-bottom:12vh">
+    <div class="svclist__group">
+      <div class="svclist__cat">
+        <h3 class="reveal"><svg viewBox="0 0 56 56" fill="none" stroke="url(#ico)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 48 V8"/><path d="M8 48 H48"/><path d="M14 38 L24 28 L32 33 L46 15"/><path d="M38 15 H46 V23"/></svg>Growth &amp;<br>Performance</h3>
+        <img class="reveal" src="assets/img/cat-growth.webp" alt="Growth & Performance at Zenthoz" loading="lazy">
+      </div>
+      <ul>
+        <li class="reveal"><i>01</i><div><b>Search Engine Optimization (SEO)</b><p>Own the searches that matter — technical fixes, content and authority building that move you up the rankings and keep you there.</p></div></li>
+        <li class="reveal"><i>02</i><div><b>Pay-Per-Click Advertising (PPC)</b><p>Search, shopping, display and remarketing campaigns managed against one number: your return on ad spend.</p></div></li>
+        <li class="reveal"><i>03</i><div><b>Social Media Advertising</b><p>Paid campaigns on Meta, TikTok, LinkedIn and beyond — targeted, tested and tuned for conversions, not likes.</p></div></li>
+        <li class="reveal"><i>04</i><div><b>Conversion Rate Optimization (CRO)</b><p>Turn more of the traffic you already have into buyers through testing, heatmaps and journey fixes.</p></div></li>
+        <li class="reveal"><i>05</i><div><b>Analytics &amp; Reporting</b><p>Dashboards that show what's actually driving revenue — so every decision is backed by data.</p></div></li>
+        <li class="reveal"><i>06</i><div><b>Affiliate Marketing</b><p>Partner networks that sell for you — recruited, managed and paid only on performance.</p></div></li>
+        <li class="reveal"><i>07</i><div><b>Local Business Marketing</b><p>Dominate your neighbourhood: maps, reviews and local search that fill real-world locations.</p></div></li>
+        <li class="reveal"><i>08</i><div><b>Mobile Marketing</b><p>Reach customers on the device they never put down — app campaigns, SMS and mobile-first funnels.</p></div></li>
+      </ul>
     </div>
-    <div class="svcgrid" id="svcGrid"></div>
+    <div class="svclist__group">
+      <div class="svclist__cat">
+        <h3 class="reveal"><svg viewBox="0 0 56 56" fill="none" stroke="url(#ico)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="10" width="40" height="30" rx="3"/><path d="M8 18 H48"/><path d="M20 48 H36"/><path d="M28 40 V48"/><path d="M22 27 L26 33 L35 24"/></svg>Web &amp;<br>Commerce</h3>
+        <img class="reveal" src="assets/img/cat-web.webp" alt="Web & Commerce at Zenthoz" loading="lazy">
+      </div>
+      <ul>
+        <li class="reveal"><i>09</i><div><b>Web Design &amp; Development</b><p>Conversion-first websites built to sell — fast, responsive and engineered around the customer journey.</p></div></li>
+        <li class="reveal"><i>10</i><div><b>E-commerce Marketing</b><p>Full-funnel growth for online stores: traffic, merchandising, retention and repeat purchase.</p></div></li>
+        <li class="reveal"><i>11</i><div><b>Marketplace Management</b><p>Win the buy box — listings, ads and operations on Amazon and beyond.</p></div></li>
+        <li class="reveal"><i>12</i><div><b>Marketing Automation</b><p>Journeys that run themselves — lead scoring, nurture flows and lifecycle triggers.</p></div></li>
+        <li class="reveal"><i>13</i><div><b>Emerging Technologies</b><p>AI, personalization and whatever comes next — piloted safely, deployed for advantage.</p></div></li>
+      </ul>
+    </div>
+    <div class="svclist__group">
+      <div class="svclist__cat">
+        <h3 class="reveal"><svg viewBox="0 0 56 56" fill="none" stroke="url(#ico)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="28" cy="28" r="20"/><circle cx="20" cy="22" r="3"/><circle cx="34" cy="18" r="3"/><circle cx="39" cy="30" r="3"/><path d="M28 48 C24 42 26 36 31 34"/></svg>Brand &amp;<br>Creative</h3>
+        <img class="reveal" src="assets/img/cat-brand.webp" alt="Brand & Creative at Zenthoz" loading="lazy">
+      </div>
+      <ul>
+        <li class="reveal"><i>14</i><div><b>Brand Strategy &amp; Development</b><p>Positioning, naming and identity systems that make every other channel work harder.</p></div></li>
+        <li class="reveal"><i>15</i><div><b>Graphic Design</b><p>Scroll-stopping visuals for every touchpoint — ads, decks, packaging and social.</p></div></li>
+        <li class="reveal"><i>16</i><div><b>Photography Services</b><p>Product, lifestyle and brand photography that makes people stop and look twice.</p></div></li>
+        <li class="reveal"><i>17</i><div><b>Video Marketing</b><p>Short-form, ads and brand films — scripted, shot and edited to hold attention and convert.</p></div></li>
+        <li class="reveal"><i>18</i><div><b>Digital PR Solutions</b><p>Earn coverage and links that build authority, trust and search power at the same time.</p></div></li>
+        <li class="reveal"><i>19</i><div><b>Online Reputation Management</b><p>Own your search results and reviews — protect the brand you've worked to build.</p></div></li>
+      </ul>
+    </div>
+    <div class="svclist__group">
+      <div class="svclist__cat">
+        <h3 class="reveal"><svg viewBox="0 0 56 56" fill="none" stroke="url(#ico)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12 H46 V36 H24 L14 45 V36 H10 Z"/><path d="M18 21 H38"/><path d="M18 28 H32"/></svg>Content &amp;<br>Engagement</h3>
+        <img class="reveal" src="assets/img/cat-content.webp" alt="Content & Engagement at Zenthoz" loading="lazy">
+      </div>
+      <ul>
+        <li class="reveal"><i>20</i><div><b>Content Marketing</b><p>Strategy, writing and distribution that turn expertise into pipeline.</p></div></li>
+        <li class="reveal"><i>21</i><div><b>Social Media Marketing</b><p>Feeds that build community — organic strategy, content calendars and daily engagement.</p></div></li>
+        <li class="reveal"><i>22</i><div><b>Email Marketing</b><p>Automated journeys and campaigns that nurture strangers into customers and customers into fans.</p></div></li>
+        <li class="reveal"><i>23</i><div><b>Podcast Marketing</b><p>Launch, produce and promote audio that positions you as the voice of your industry.</p></div></li>
+        <li class="reveal"><i>24</i><div><b>Webinar Marketing</b><p>Live events that educate, qualify and convert — from invite funnel to replay campaign.</p></div></li>
+        <li class="reveal"><i>25</i><div><b>Customer Experience (CX)</b><p>Map and fix every step of the journey so buying from you feels effortless.</p></div></li>
+        <li class="reveal"><i>26</i><div><b>Marketing Consulting</b><p>Senior strategy on demand — audits, roadmaps and coaching for in-house teams.</p></div></li>
+      </ul>
+    </div>
   </section>
 
   <!-- MARQUEE -->

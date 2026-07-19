@@ -170,21 +170,40 @@
     }
   }
 
-  /* ---------- work previews (generative, follow cursor) ---------- */
+  /* ---------- work previews (real screenshots, follow cursor) ---------- */
   var preview = document.getElementById("preview");
-  var workRows = document.querySelectorAll(".wk[data-project]");
+  var workRows = document.querySelectorAll(".wk");
   if (preview && workRows.length){
-    var canvases = artPalettes.map(function(_, idx){
-      var c = document.createElement("canvas");
-      paintArt(c, idx, 480, 600, true);
-      preview.appendChild(c);
-      return c;
-    });
+    var pvCache = {};
+    var getPv = function(row, idx){
+      var key = row.dataset.img || ("c" + idx);
+      if (pvCache[key]) return pvCache[key];
+      var wrap = document.createElement("div");
+      wrap.className = "pv";
+      var useCanvas = function(){
+        wrap.innerHTML = "";
+        var c = document.createElement("canvas");
+        paintArt(c, idx, 480, 600, true);
+        wrap.appendChild(c);
+      };
+      if (row.dataset.img){
+        var im = new Image();
+        im.alt = "";
+        im.onerror = useCanvas;
+        im.src = row.dataset.img;
+        wrap.appendChild(im);
+      } else {
+        useCanvas();
+      }
+      preview.appendChild(wrap);
+      pvCache[key] = wrap;
+      return wrap;
+    };
     var px = 0, py = 0, tx = 0, ty = 0;
-    workRows.forEach(function(row){
-      var i = +row.dataset.project % canvases.length;
+    workRows.forEach(function(row, idx){
       row.addEventListener("mouseenter", function(){
-        canvases.forEach(function(c, j){ c.classList.toggle("on", j === i); });
+        var pv = getPv(row, idx);
+        preview.querySelectorAll(".pv").forEach(function(el){ el.classList.toggle("on", el === pv); });
         preview.classList.add("show");
       });
       row.addEventListener("mouseleave", function(){ preview.classList.remove("show"); });
@@ -351,104 +370,55 @@
     l.addEventListener("animationend", function(){ l.classList.remove("zap"); });
   });
 
-  /* ---------- trusted brands: duplicate track for seamless loop ---------- */
-  var brandsTrack = document.getElementById("brandsTrack");
-  if (brandsTrack){ brandsTrack.innerHTML += brandsTrack.innerHTML; }
-
-  /* ---------- services page: animated cards ---------- */
-  var svcGrid = document.getElementById("svcGrid");
-  if (svcGrid){
-    var SERVICES = [
-      ["Growth & Performance","Search Engine Optimization (SEO)","Own the searches that matter — technical fixes, content and authority that move you up the rankings and keep you there."],
-      ["Growth & Performance","Pay-Per-Click Advertising (PPC)","Search, shopping, display and remarketing campaigns managed against one number: your return on ad spend."],
-      ["Growth & Performance","Social Media Advertising","Paid campaigns on Meta, TikTok, LinkedIn and beyond — targeted, tested and tuned for conversions, not likes."],
-      ["Growth & Performance","Conversion Rate Optimization (CRO)","Turn more of the traffic you already have into buyers through testing, heatmaps and journey fixes."],
-      ["Growth & Performance","Analytics & Reporting","Dashboards that show what's actually driving revenue — so every decision is backed by data."],
-      ["Growth & Performance","Affiliate Marketing","Partner networks that sell for you — recruited, managed and paid only on performance."],
-      ["Growth & Performance","Local Business Marketing","Dominate your neighbourhood: maps, reviews and local search that fill real-world locations."],
-      ["Growth & Performance","Mobile Marketing","Reach customers on the device they never put down — app campaigns, SMS and mobile-first funnels."],
-      ["Brand & Creative","Brand Strategy & Development","Positioning, naming and identity systems that make every other channel work harder."],
-      ["Brand & Creative","Graphic Design","Scroll-stopping visuals for every touchpoint — ads, decks, packaging and social."],
-      ["Brand & Creative","Photography Services","Product, lifestyle and brand photography that makes people stop and look twice."],
-      ["Brand & Creative","Video Marketing","Short-form, ads and brand films — scripted, shot and edited to hold attention and convert."],
-      ["Brand & Creative","Digital PR Solutions","Earn coverage and links that build authority, trust and search power at the same time."],
-      ["Brand & Creative","Online Reputation Management","Own your search results and reviews — protect the brand you've worked to build."],
-      ["Web & Commerce","Web Design & Development","Conversion-first websites built to sell — fast, responsive and engineered around the customer journey."],
-      ["Web & Commerce","E-commerce Marketing","Full-funnel growth for online stores: traffic, merchandising, retention and repeat purchase."],
-      ["Web & Commerce","Marketplace Management","Win the buy box — listings, ads and operations on Amazon and beyond."],
-      ["Web & Commerce","Marketing Automation","Journeys that run themselves — lead scoring, nurture flows and lifecycle triggers."],
-      ["Web & Commerce","Emerging Technologies","AI, personalization and whatever comes next — piloted safely, deployed for advantage."],
-      ["Content & Engagement","Content Marketing","Strategy, writing and distribution that turn expertise into pipeline."],
-      ["Content & Engagement","Social Media Marketing","Feeds that build community — organic strategy, content calendars and daily engagement."],
-      ["Content & Engagement","Email Marketing","Automated journeys and campaigns that nurture strangers into customers and customers into fans."],
-      ["Content & Engagement","Podcast Marketing","Launch, produce and promote audio that positions you as the voice of your industry."],
-      ["Content & Engagement","Webinar Marketing","Live events that educate, qualify and convert — from invite funnel to replay campaign."],
-      ["Content & Engagement","Customer Experience (CX)","Map and fix every step of the journey so buying from you feels effortless."],
-      ["Content & Engagement","Marketing Consulting","Senior strategy on demand — audits, roadmaps and coaching for in-house teams."]
-    ];
-    // real imagery per service where supplied; generative art otherwise
-    var SVC_IMG = {
-      "Web Design & Development": "svc-web.png",
-      "Search Engine Optimization (SEO)": "svc-seo.png",
-      "Social Media Marketing": "svc-social.png",
-      "Social Media Advertising": "svc-social.png",
-      "Pay-Per-Click Advertising (PPC)": "svc-ppc.png",
-      "Content Marketing": "svc-content.png",
-      "Email Marketing": "svc-email.png",
-      "Brand Strategy & Development": "svc-brand.png"
-    };
-    SERVICES.forEach(function(s, i){
-      var card = document.createElement("article");
-      card.className = "scard";
-      var media = document.createElement("div");
-      media.className = "scard__media";
-      var useCanvas = function(){
-        media.innerHTML = "";
-        var cv = document.createElement("canvas");
-        paintArt(cv, i, 400, 200, false);
-        media.appendChild(cv);
-      };
-      if (SVC_IMG[s[1]]){
-        var im = document.createElement("img");
-        im.src = "assets/img/" + SVC_IMG[s[1]];
-        im.alt = "";
-        im.loading = "lazy";
-        im.onerror = useCanvas;
-        media.appendChild(im);
-      } else {
-        useCanvas();
-      }
-      var body = document.createElement("div");
-      body.className = "scard__body";
-      var tag = document.createElement("span"); tag.className = "scard__tag"; tag.textContent = s[0];
-      var h = document.createElement("h3"); h.textContent = s[1];
-      var p = document.createElement("p"); p.textContent = s[2];
-      body.appendChild(tag); body.appendChild(h); body.appendChild(p);
-      card.appendChild(media); card.appendChild(body);
-      card.style.transitionDelay = (i % 3) * 90 + "ms";
-      svcGrid.appendChild(card);
+  /* ---------- drag marquee: auto-scrolls, pauses on hover, drags ---------- */
+  function dragMarquee(track, speed){
+    var strip = track.parentElement,
+        x = 0, half = 0, paused = false, dragging = false,
+        lastX = 0, vel = 0;
+    track.innerHTML += track.innerHTML; // duplicate for seamless wrap
+    track.style.animation = "none";
+    track.style.willChange = "transform";
+    strip.style.cursor = "grab";
+    strip.style.touchAction = "pan-y";
+    track.querySelectorAll("img").forEach(function(i){ i.draggable = false; });
+    var measure = function(){ half = track.scrollWidth / 2; };
+    addEventListener("resize", measure);
+    // images change the track width as they load
+    track.querySelectorAll("img").forEach(function(i){ i.addEventListener("load", measure); });
+    measure();
+    strip.addEventListener("mouseenter", function(){ paused = true; });
+    strip.addEventListener("mouseleave", function(){ paused = false; });
+    strip.addEventListener("pointerdown", function(e){
+      dragging = true; lastX = e.clientX; vel = 0;
+      try{ strip.setPointerCapture(e.pointerId); }catch(err){}
+      strip.style.cursor = "grabbing";
+      e.preventDefault();
     });
-    var cards = svcGrid.querySelectorAll(".scard");
-    if (reduced){
-      cards.forEach(function(c){ c.classList.add("in"); });
-    } else {
-      var cio = new IntersectionObserver(function(entries){
-        entries.forEach(function(en){
-          if (en.isIntersecting){ en.target.classList.add("in"); cio.unobserve(en.target); }
-        });
-      }, {threshold: .12});
-      cards.forEach(function(c){ cio.observe(c); });
-    }
-    var allBtn = document.getElementById("svcAll");
-    if (allBtn){
-      allBtn.addEventListener("click", function(){
-        cards.forEach(function(c){ c.style.transitionDelay = "0ms"; c.classList.add("in"); });
-        allBtn.textContent = "All " + cards.length + " services shown";
-        allBtn.disabled = true;
-        allBtn.style.opacity = ".55";
-      });
-    }
+    strip.addEventListener("pointermove", function(e){
+      if (!dragging) return;
+      var dx = e.clientX - lastX; lastX = e.clientX;
+      x += dx; vel = dx;
+    });
+    var endDrag = function(){ dragging = false; strip.style.cursor = "grab"; };
+    strip.addEventListener("pointerup", endDrag);
+    strip.addEventListener("pointercancel", endDrag);
+    (function frame(){
+      if (!dragging){
+        if (Math.abs(vel) > .25){ x += vel; vel *= .94; }        // momentum after a drag
+        else if (!paused && !reduced){ x -= speed; }             // idle auto-scroll
+      }
+      if (half > 0){
+        while (x <= -half) x += half;
+        while (x > 0) x -= half;
+      }
+      track.style.transform = "translateX(" + x + "px)";
+      requestAnimationFrame(frame);
+    })();
   }
+  var brandsTrack = document.getElementById("brandsTrack");
+  if (brandsTrack) dragMarquee(brandsTrack, .7);
+  var reviewsTrack = document.getElementById("reviewsTrack");
+  if (reviewsTrack) dragMarquee(reviewsTrack, .45);
 
   /* ---------- contact form (email relay + mail-app fallback) ---------- */
   var cf = document.getElementById("contactForm");
